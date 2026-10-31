@@ -108,3 +108,13 @@ Le gestionnaire permet de sélectionner chaque lettre du nom (Ctrl pour sélecti
 ## Actualisation communautaire
 La section Communauté WARLINK dispose d'un bouton Actualiser et se rafraîchit toutes les 15 secondes lorsque la page Serveurs HorizonMW est visible. Elle se met aussi à jour au retour dans la fenêtre et immédiatement après une publication ou un retrait. Une réponse réseau ancienne ne peut plus écraser une réponse plus récente ; une panne temporaire conserve la dernière liste avec un état d'erreur. Les autres utilisateurs doivent disposer de cette version pour bénéficier de l'actualisation automatique.
 
+
+## Gestionnaire HorizonMW
+
+La communauté WARLINK utilise un port TCP/UDP distinct par serveur simultané. Une règle 27018 ne couvre pas 27017. Le bouton Aide réseau / publication affiche le port du profil sélectionné. Aucun réglage de box n’est modifié automatiquement.
+
+Les cartes sont détectées dans les fastfiles installés (paire carte + chargement) et hmw-usermaps. La sélection propose recherche, origine MWR/MW2/MW3, cases à cocher et rotation ordonnée. Les aperçus empaquetés du jeu ne sont pas encore extraits.
+
+Équipement bots : classes normales, sniper, mêlée sans munitions (arme encore visible), sans arme. Appliquer les bots permet de changer les réglages pendant la partie. Le rééquilibrage déplace uniquement les bots, sans déplacer de force les humains. Le bandeau Milieu à gauche correspond à l’exemple fourni. Le changement du véritable tag de clan des bots déjà connectés n’est pas pris en charge par cette version.
+
+Validation native : node tests/hmw-options.cjs lance un serveur local isolé sur 27020 dans le dossier de jeu et vérifie chargement réel, HUD, équipements, rééquilibrage, RCON et changement de carte. Le script de production est restauré à la fin.

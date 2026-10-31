@@ -147,6 +147,11 @@ namespace hmw_host
             const auto diff = str(p,"difficulty","regular");
             if (diff!="recruit"&&diff!="regular"&&diff!="hardened"&&diff!="veteran"&&diff!="mixed") throw std::runtime_error("Difficulté invalide");
             line("warlink_bot_difficulty",diff);
+            const auto weapons=str(p,"botWeapons","mixed");
+            if(weapons!="mixed"&&weapons!="sniper"&&weapons!="knife"&&weapons!="none")throw std::runtime_error("Équipement bots invalide");
+            line("warlink_bot_weapons",weapons);
+            line("warlink_bot_balance",boolean(p,"botBalance",true)?"1":"0");
+            line("scr_teambalance",boolean(p,"botBalance",true)?"0":"1");
             std::string rotation;
             if (p.HasMember("rotation") && p["rotation"].IsArray())
                 for (const auto& map : p["rotation"].GetArray())
@@ -343,14 +348,22 @@ namespace hmw_host
                     p.AddMember("ready",running && info.find("\\sv_running\\1")!=std::string::npos,p.GetAllocator());
                     profiles.PushBack(rapidjson::Value(p,a),a);
                 }
-                std::set<std::string> names{"mp_rust","mp_shipment","mp_terminal","mp_highrise","mp_crash","mp_backlot","mp_crossfire","mp_vacant","mp_afghan","mp_favela","mp_bog","mp_citystreets","mp_killhouse","mp_pipeline","mp_overgrown","mp_cargoship"};
+                std::set<std::string> names;
                 std::string game;
                 if(const auto c=game_config::get_game_config("hmw"))if(const auto install=c->get_install_path())
                 {
                     game=utils::string::path_to_utf8(*install);std::error_code ec;
-                    const auto custom=*install/"hmw-usermaps";
+                    // A matching load fastfile and main fastfile identify maps, excluding weapon/model fastfiles.
+                    for(std::filesystem::directory_iterator it(*install,ec),end;!ec&&it!=end;it.increment(ec)) {
+                        const auto filename=it->path().filename().string();
+                        if(filename.size()>8 && filename.ends_with("_load.ff")) {
+                            const auto name=filename.substr(0,filename.size()-8);
+                            if(name.starts_with("mp_") && std::regex_match(name,std::regex("[a-zA-Z0-9_]{1,64}")) && utils::io::file_exists(*install/(name+".ff"))) names.insert(name);
+                        }
+                    }
+                    ec.clear(); const auto custom=*install/"hmw-usermaps";
                     for(std::filesystem::directory_iterator it(custom,ec),end;!ec&&it!=end;it.increment(ec))
-                        if(it->is_directory()&&std::regex_match(it->path().filename().string(),std::regex("[a-zA-Z0-9_]{1,64}")))names.insert(it->path().filename().string());
+                        if(it->is_directory()&&std::regex_match(it->path().filename().string(),std::regex("[a-zA-Z0-9_]{1,64}")))if(utils::io::file_exists(it->path()/(it->path().filename().string()+".ff")))names.insert(it->path().filename().string());
                 }
                 for(const auto& name:names)maps.PushBack(rapidjson::Value(name,a),a);
                 set(out,"gamePath",game,a);out.AddMember("profiles",profiles,a);out.AddMember("maps",maps,a);
@@ -384,7 +397,7 @@ namespace hmw_host
                         if(key.empty()){key=utils::string::to_lower(utils::cryptography::sha256::compute(secret(),true));set(owner,"token",key,owner.GetAllocator());write_json(settings,owner);}
                         const auto port=number(p,"port",27017,1024,65535);const auto motd=safe_text(str(p,"motd","Bienvenue sur WARLINK"));
                         if(action=="publish"){
-                            if(str(p,"access")!="public")throw std::runtime_error("Choisis Public et redémarre le serveur avant publication");
+                            if(str(p,"access")!="public")throw std::runtime_error("Choisis Communauté WARLINK et redémarre le serveur avant publication");
                             if(udp(port,"getinfo warlink",300).find("\\sv_running\\1")==std::string::npos)throw std::runtime_error("Le serveur n'est pas encore prêt");
                             const auto proof=utils::string::to_lower(utils::cryptography::sha256::compute(key,true));
                             udp(port,"rcon "+str(p,"rconPassword")+" set sv_motd \"[WL:"+proof+"]\"");

@@ -10,6 +10,7 @@ init()
 {
     if (!getdvarint("dedicated") || !getdvarint("warlink_managed_server"))
         return;
+    precacheitem("remington700_mp");
     LogPrint("WARLINK_BOTS_READY\n");
     level thread warlink_manage_bots();
     level thread warlink_connections();
@@ -62,7 +63,14 @@ warlink_manage_bots()
             if (skill != "recruit" && skill != "regular" && skill != "hardened" && skill != "veteran")
                 skill = "regular";
             bot maps\mp\bots\_bots_util::bot_set_difficulty(skill, undefined);
+            if (!isdefined(bot.warlink_loadout_started))
+            {
+                bot.warlink_loadout_started = true;
+                bot thread warlink_loadout_spawns();
+            }
+            bot warlink_loadout();
         }
+        if (getdvarint("warlink_bot_balance")) warlink_balance_bots();
         wait 2;
     }
 }
@@ -154,4 +162,84 @@ warlink_clear_banner(banner)
     self endon("disconnect");
     wait 6;
     if (isdefined(banner)) banner destroy();
+}
+
+warlink_loadout_spawns()
+{
+    self endon("disconnect");
+    for (;;)
+    {
+        self waittill("spawned_player");
+        self.warlink_weapon_mode = undefined;
+        wait 0.5;
+        self warlink_loadout();
+    }
+}
+
+warlink_loadout()
+{
+    if (self.sessionstate != "playing") return;
+    mode = getdvar("warlink_bot_weapons");
+    if (mode == "") mode = "mixed";
+    if (isdefined(self.warlink_weapon_mode) && self.warlink_weapon_mode == mode) return;
+    previous = self.warlink_weapon_mode;
+    self.warlink_weapon_mode = mode;
+    self enableweapons();
+    self enableweaponswitch();
+    self enableoffhandweapons();
+    self allowmelee(true);
+    if (mode == "mixed")
+    {
+        if (isdefined(previous) && previous != "mixed") self suicide();
+        return;
+    }
+    self takeallweapons();
+    self disableoffhandweapons();
+    if (mode == "none")
+    {
+        self disableweapons();
+        self allowmelee(false);
+    }
+    else
+    {
+        self giveweapon("remington700_mp");
+        self switchtoweaponimmediate("remington700_mp");
+        self disableweaponswitch();
+        if (mode == "sniper") self givemaxammo("remington700_mp");
+        else
+        {
+            self setweaponammoclip("remington700_mp", 0);
+            self setweaponammostock("remington700_mp", 0);
+        }
+    }
+    LogPrint("WARLINK_LOADOUT_APPLIED " + mode + "\n");
+}
+
+warlink_balance_bots()
+{
+    if (getdvar("g_gametype") == "dm" || getdvar("g_gametype") == "gun") return;
+    allies = [];
+    axis = [];
+    foreach (player in level.players)
+    {
+        if (!isdefined(player.pers["team"])) continue;
+        if (player.pers["team"] == "allies") allies[allies.size] = player;
+        if (player.pers["team"] == "axis") axis[axis.size] = player;
+    }
+    if (abs(allies.size - axis.size) < 2) return;
+    larger = allies;
+    target = "axis";
+    if (axis.size > allies.size) { larger = axis; target = "allies"; }
+    foreach (bot in larger)
+    {
+        if (!isBot(bot)) continue;
+        bot.switching_teams = true;
+        bot.joining_team = target;
+        bot.leaving_team = bot.pers["team"];
+        if (bot.sessionstate == "playing") bot suicide();
+        bot maps\mp\gametypes\_menus::addtoteam(target);
+        bot maps\mp\gametypes\_menus::endrespawnnotify();
+        LogPrint("WARLINK_BOT_TEAM_BALANCED\n");
+        return;
+    }
 }

@@ -500,7 +500,7 @@ window.RedistManager = (function() {
 })();
 
 window.DiscordWidget = (function() {
-    const INVITE_URL = 'https://discord.com/api/v10/invites/WyJQCwCCGW?with_counts=true';
+    const INVITE_URL = 'https://discord.com/api/v10/invites/3hrvcWNDPa?with_counts=true';
     let cachedOnline = null;
     let lastFetch = 0;
     const TTL_MS = 5 * 60 * 1000;

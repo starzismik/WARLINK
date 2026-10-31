@@ -32,7 +32,7 @@
         const f=overlay?.querySelector('.hmwh-form'); if(!f)return;
         const n=allocation(f.elements.players.value,f.elements.bots.value,f.elements.humans.value,changed);
         for(const key of ['players','bots','humans'])f.elements[key].value=n[key];
-        f.elements.difficulty.disabled=n.bots===0;
+        f.elements.difficulty.disabled=n.bots===0;f.elements.botWeapons.disabled=n.bots===0;
         overlay.querySelector('.hmwh-allocation').textContent=n.bots ? n.players+' places : '+n.humans+' pour les humains et '+n.bots+' bots maximum.' : n.players+' places humaines · aucun bot.';
     }
     function values() {
@@ -40,22 +40,22 @@
         const f=overlay.querySelector('form'),data=new FormData(f),p={};
         for(const [k,v] of data)p[k]=v;
         for(const k of ['port','players','bots','scoreLimit','timeLimit','health','friendlyFire','announcementInterval','healthRegen','respawnDelay','lives','roundLimit','winLimit'])p[k]=Number(p[k]);
-        for(const k of ['killstreaks','voting','headshots','welcomeRespawn','hardcore','constantUav','disableSprint','thirdPerson','collision'])p[k]=f.elements[k].checked;
-        if(!p.difficulty)p.difficulty=f.elements.difficulty.value;
+        for(const k of ['killstreaks','voting','headshots','welcomeRespawn','hardcore','constantUav','disableSprint','thirdPerson','collision','botBalance'])p[k]=f.elements[k].checked;
+        if(!p.difficulty)p.difficulty=f.elements.difficulty.value;if(!p.botWeapons)p.botWeapons=f.elements.botWeapons.value;
         p.rotation=p.rotation.split(/\s+/).filter(Boolean);p.id=selected;return p;
     }
     function renderList(){
-        overlay.querySelector('.hmwh-profiles').innerHTML=profiles.map(p=>`<button type="button" data-profile="${esc(p.id)}" class="${p.id===selected?'active':''}"><strong>${window.WarlinkName.html(p.name)}</strong><small>UDP ${p.port} · ${esc(p.access==='public'?'Public':p.access==='local'?'Local':'Privé')}</small></button>`).join('')||'<p class="hmwh-muted">Crée ton premier serveur pour commencer.</p>';
+        overlay.querySelector('.hmwh-profiles').innerHTML=profiles.map(p=>`<button type="button" data-profile="${esc(p.id)}" class="${p.id===selected?'active':''}"><strong>${window.WarlinkName.html(p.name)}</strong><small>UDP ${p.port} · ${esc(p.access==='public'?'Communauté WARLINK':p.access==='local'?'Local':'Privé')}</small></button>`).join('')||'<p class="hmwh-muted">Crée ton premier serveur pour commencer.</p>';
     }
     function renderForm(profile){
-        const p={name:'STARZISMIK · HorizonMW',gamePath,port:27017,access:'private',password:'',serverKey:'',rconPassword:'',players:12,bots:0,difficulty:'regular',mode:'war',rotation:['mp_rust','mp_terminal'],scoreLimit:75,timeLimit:10,health:100,friendlyFire:0,killstreaks:true,voting:true,headshots:false,motd:'Bienvenue sur WARLINK',messagePosition:'chat',healthRegen:5,respawnDelay:0,lives:0,roundLimit:1,winLimit:1,collision:true,advanced:'',...profile};
+        const p={name:'STARZISMIK · HorizonMW',gamePath,port:27017,access:'private',password:'',serverKey:'',rconPassword:'',players:12,bots:0,difficulty:'regular',mode:'war',rotation:['mp_rust','mp_terminal'],scoreLimit:75,timeLimit:10,health:100,friendlyFire:0,killstreaks:true,voting:true,headshots:false,motd:'Bienvenue sur WARLINK',botWeapons:'mixed',botBalance:true,messagePosition:'left',healthRegen:5,respawnDelay:0,lives:0,roundLimit:1,winLimit:1,collision:true,advanced:'',...profile};
         if(!p.gamePath)p.gamePath=gamePath;
         overlay.querySelector('.hmwh-editor').innerHTML=`
             <form class="hmwh-form">
-                <div class="hmwh-section-head"><h3>Configuration</h3><select name="preset" aria-label="Préréglage"><option value="">Appliquer un préréglage…</option value="duel">1v1 privé</option><option value="training">Entraînement avec bots</option><option value="public">Serveur public</option></select></div>
+                <div class="hmwh-section-head"><h3>▣ Configuration du serveur WARLINK</h3><select name="preset" aria-label="Préréglage"><option value="">Appliquer un préréglage…</option value="duel">1v1 privé</option><option value="training">Entraînement avec bots</option><option value="public">Communauté WARLINK</option></select></div>
                 <div class="hmwh-grid">
                     <div><input name="name" type="hidden" value="${esc(p.name)}"><div class="hmwh-name-editor"></div></div>
-                    <label class="hmwh-field"><span>Accès</span><select name="access"><option value="local">Local · ce PC uniquement</option><option value="private">Privé · amis / réseau</option><option value="public">Public · Internet</option></select></label>
+                    <label class="hmwh-field"><span>Accès</span><select name="access"><option value="local">Local · ce PC uniquement</option><option value="private">Privé · amis / réseau</option><option value="public">Communauté WARLINK · accessible sur Internet</option></select></label>
                     ${field('gamePath','Dossier HorizonMW (hmw-mod.exe)','text',p.gamePath,'required')}
                     ${field('port','Port du serveur · TCP et UDP','number',p.port,'min="1024" max="65535" required')}
                     ${field('password','Mot de passe pour rejoindre (privé)','text',p.password,'maxlength="64" autocomplete="off"')}
@@ -67,17 +67,15 @@
                     ${field('announcementInterval','Annonces en secondes (0 = désactivé, minimum 10 s)','number',p.announcementInterval||0,'min="0" max="3600"')}
                     <label><input name="welcomeRespawn" type="checkbox" ${p.welcomeRespawn?'checked':''}> Réafficher bienvenue et Discord à chaque réapparition</label>
                 </div>
-                <h3>Affichage des messages</h3><label class="hmwh-field"><span>Position bienvenue, Discord et annonces</span><select name="messagePosition"><option value="chat">Bas à gauche · messages du jeu</option><option value="center">Centre · grand message</option><option value="left">Gauche · bandeau HUD</option></select></label>
-                <h3>Cartes & rotation</h3><div class="hmwh-grid">
-                    <label class="hmwh-field"><span>Ajouter une carte</span><select name="mapPick"><option value="">Choisir…</option>${maps.map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join('')}</select></label>
-                    <label class="hmwh-field"><span>Rotation · un identifiant de carte par ligne</span><textarea name="rotation" rows="4" required>${esc(p.rotation.join('\n'))}</textarea></label>
-                </div>
-                <h3>Bots</h3><div class="hmwh-grid">
+                <h3>Affichage des messages</h3><label class="hmwh-field"><span>Position bienvenue, Discord et annonces</span><select name="messagePosition"><option value="chat">Bas à gauche · messages du jeu</option><option value="center">Centre · grand message</option><option value="left">Milieu à gauche · bandeau comme sur ta capture</option></select></label>
+                <h3>▦ Cartes & rotation</h3><div class="hmwh-map-editor"><input type="hidden" name="rotation" value="${esc(p.rotation.join(' '))}"><div class="hmwh-map-tools"><select data-map-family aria-label="Origine des cartes"><option value="">Toutes les cartes</option><option value="MWR">Modern Warfare Remastered</option><option value="MW2">Modern Warfare 2</option><option value="MW3">Modern Warfare 3</option><option value="custom">Autres cartes</option></select><input type="search" data-map-search placeholder="Rechercher une carte…" aria-label="Rechercher une carte"><button type="button" data-map-all>Tout sélectionner</button><button type="button" data-map-none>Tout désélectionner</button></div><div class="hmwh-map-catalog"></div><h4>Ordre de la rotation <small class="hmwh-map-count"></small></h4><div class="hmwh-map-rotation"></div><p class="hmwh-muted">Déplace les cartes avec les flèches. Seules les cartes détectées dans ton installation sont proposées. Les illustrations restent indisponibles lorsque le jeu les conserve dans ses archives.</p></div>
+                <h3>◈ Bots & équipes</h3><div class="hmwh-grid">
                     ${field('humans','Places réservées aux humains','number',Math.max(1,p.players-p.bots),'min="1" max="18" required')}
                     ${field('bots','Nombre de bots (0 = sans bots)','number',p.bots,'min="0" max="17" required')}
                     <label class="hmwh-field"><span>Difficulté</span><select name="difficulty"><option value="recruit">Recrue</option><option value="regular">Normal</option><option value="hardened">Vétéran</option><option value="veteran">Expert</option><option value="mixed">Mélangée</option></select></label>
+                    <label class="hmwh-field"><span>Équipement des bots</span><select name="botWeapons"><option value="mixed">Mix · classes du jeu</option><option value="sniper">Sniper uniquement</option><option value="knife">Mêlée uniquement · sans munitions</option><option value="none">Sans arme</option></select></label><label><input name="botBalance" type="checkbox" ${p.botBalance?'checked':''}> Rééquilibrer les équipes avec les bots</label>
                 </div><p class="hmwh-muted hmwh-allocation" aria-live="polite"></p><p class="hmwh-muted">Les bots libèrent des places quand des humains rejoignent. Certaines cartes personnalisées n’ont pas de navigation pour les bots. XP normale ×1 ; la persistance du rang dépend du jeu.</p>
-                <h3>Règles de partie</h3><div class="hmwh-grid">
+                <h3>⚑ Règles de partie</h3><div class="hmwh-grid">
                     ${field('scoreLimit','Limite de score (0 = illimité)','number',p.scoreLimit,'min="0" max="100000"')}
                     ${field('timeLimit','Durée en minutes (0 = illimité)','number',p.timeLimit,'min="0" max="1440"')}
                     ${field('health','Santé des joueurs','number',p.health,'min="1" max="1000"')}
@@ -98,8 +96,9 @@
             </form>`;
         const form=overlay.querySelector('form');
         window.WarlinkName.mount(form);
-        for(const k of ['access','mode','difficulty','friendlyFire','messagePosition'])form.elements[k].value=String(p[k]);
-        overlay.querySelector('.hmwh-live-map').innerHTML=maps.map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join('');
+        for(const k of ['access','mode','difficulty','friendlyFire','messagePosition','botWeapons'])form.elements[k].value=String(p[k]);
+        overlay.querySelector('.hmwh-live-map').innerHTML=maps.map(m=>`<option value="${esc(m)}">${esc(mapLabel(m))}</option>`).join('');
+        renderMaps();
         syncAllocation();
         renderList();overlay.querySelector('.hmwh-log').textContent='Démarre le serveur puis consulte ici son chargement.';
         overlay.querySelector('.hmwh-status').textContent=profile?'Serveur sélectionné':'Nouveau profil · à enregistrer';
@@ -114,8 +113,8 @@
             overlay.querySelector('.hmwh-status').textContent=r.ready?'● En ligne · prêt à rejoindre':r.running?'◌ Démarrage / chargement de la carte…':'○ Arrêté';
             overlay.querySelector('.hmwh-status').classList.toggle('ready',!!r.ready);
             overlay.querySelector('.hmwh-info').textContent=r.info?r.info.replace(/^infoResponse\s*/,'').replace(/\\/g,' · '):'';
-            overlay.querySelector('.hmwh-publishing').textContent=(r.publication || '')+' Pour la liste communautaire WARLINK, utilise Publier sur WARLINK.';
-            const log=overlay.querySelector('.hmwh-log');if(r.log){const atBottom=log.scrollHeight-log.scrollTop-log.clientHeight<60;log.textContent=r.log;if(atBottom)log.scrollTop=log.scrollHeight;}
+            overlay.querySelector('.hmwh-publishing').textContent='Communauté WARLINK : publication après vérification du port '+current().port+' en TCP et UDP depuis Internet. La liste officielle du jeu est indépendante.';
+            const log=overlay.querySelector('.hmwh-log');if(r.log){const atBottom=log.scrollHeight-log.scrollTop-log.clientHeight<60;log.innerHTML=colorLog(r.log);if(atBottom)log.scrollTop=log.scrollHeight;}
         }catch(e){message(e.message,true);}finally{polling=false;}
     }
     async function act(action){
@@ -130,43 +129,63 @@
         overlay=document.createElement('div');overlay.className='hmwh-overlay';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','Mes serveurs HorizonMW');
         overlay.innerHTML=`<div class="hmwh-window"><header><div><span class="hmwh-eyebrow">WARLINK / HORIZONMW</span><h2>Mes serveurs</h2></div><button type="button" data-close aria-label="Fermer le gestionnaire">✕</button></header>
             ${preview?'<p class="hmwh-preview">Aperçu de l’interface : aucun serveur n’est lancé depuis ce navigateur.</p>':''}
-            <div class="hmwh-body"><aside><button type="button" data-new>＋ Créer un serveur</button><div class="hmwh-profiles"></div><p class="hmwh-muted">Privé ou public, le serveur reste actif tant que ton PC est allumé. Fermer WARLINK ne l’arrête pas.</p><p class="hmwh-muted">Pour tes amis : autoriser le port choisi en TCP et UDP dans le pare-feu et sur la box. Le référencement officiel nécessite une clé HMW ; Public seul ne suffit pas.</p></aside>
+            <div class="hmwh-body"><aside><button type="button" data-new>＋ Créer un serveur</button><div class="hmwh-profiles"></div><p class="hmwh-muted">Privé ou public, le serveur reste actif tant que ton PC est allumé. Fermer WARLINK ne l’arrête pas.</p><p class="hmwh-muted">Pour tes amis : autoriser le port choisi en TCP et UDP dans le pare-feu et sur la box. Chaque serveur simultané exige un port différent et sa propre redirection. Aucune clé HMW n’est nécessaire pour la communauté WARLINK.</p></aside>
             <main><div class="hmwh-message" role="status"></div><div class="hmwh-editor"></div></main>
-            <section class="hmwh-monitor"><h3>Contrôle du serveur</h3><strong class="hmwh-status">Sélectionne un serveur</strong><div class="hmwh-controls"><button data-action="start">Démarrer</button><button data-action="stop">Arrêter</button><button data-action="restart">Redémarrer</button><button data-join>Rejoindre</button></div>
+            <section class="hmwh-monitor"><h3>▣ Contrôle du serveur</h3><strong class="hmwh-status">Sélectionne un serveur</strong><div class="hmwh-controls"><button data-action="start">Démarrer</button><button data-action="stop">Arrêter</button><button data-action="restart">Redémarrer</button><button data-join>Rejoindre</button></div>
                 <code class="hmwh-address"></code><p class="hmwh-publishing hmwh-muted"></p><p class="hmwh-muted">Pour jouer ici : 127.0.0.1. Pour tes amis : ton adresse publique et le même port. Le mot de passe du serveur se saisit dans le jeu.</p>
-                <h3>Actions en direct</h3><div class="hmwh-live"><button data-cmd="status">Joueurs / statut</button><button data-cmd="map_rotate">Carte suivante</button><button data-cmd="map_restart">Relancer la partie</button><button data-bots>Appliquer les bots</button><button data-publish>Publier sur WARLINK</button><button data-unpublish>Retirer de WARLINK</button></div><div class="hmwh-rcon-form"><select class="hmwh-live-map" aria-label="Carte à charger"></select><button data-map>Charger la carte</button></div>
+                <h3>▣ Actions en direct</h3><div class="hmwh-live"><button data-cmd="status">Joueurs / statut</button><button data-cmd="map_rotate">Carte suivante</button><button data-cmd="map_restart">Relancer la partie</button><button data-bots>Appliquer les bots</button><button data-network>Aide réseau / publication</button><button data-publish>Publier sur WARLINK</button><button data-unpublish>Retirer de WARLINK</button></div><div class="hmwh-rcon-form"><select class="hmwh-live-map" aria-label="Carte à charger"></select><button data-map>Charger la carte</button></div>
                 <form class="hmwh-rcon-form"><label class="hmwh-field"><span>Console RCON · commande administrateur</span><input name="command" placeholder="status, map mp_rust, clientkick 2…" autocomplete="off"></label><button>Envoyer</button></form>
-                <pre class="hmwh-rcon-output"></pre><h3>Journal de démarrage</h3><pre class="hmwh-log"></pre><details><summary>Réponse réseau</summary><pre class="hmwh-info"></pre></details>
+                <pre class="hmwh-rcon-output"></pre><h3>Journal de démarrage</h3><div class="hmwh-log-legend"><span class="hmwh-log-error">Erreur</span><span class="hmwh-log-warn">Avertissement</span><span class="hmwh-log-success">Succès</span><span class="hmwh-log-map">Carte</span><span class="hmwh-log-asset">Ressource</span></div><pre class="hmwh-log"></pre><details><summary>Réponse réseau</summary><pre class="hmwh-info"></pre></details>
             </section></div></div>`;
         document.body.appendChild(overlay);
         const run=fn=>Promise.resolve().then(fn).catch(e=>message(e.message,true));
         overlay.addEventListener('click',event=>{
             const b=event.target.closest('button');if(!b)return;
+            if(b.hasAttribute('data-network'))networkHelp();
+            if(b.hasAttribute('data-map-all')){setRotation(maps);return;}
+            if(b.hasAttribute('data-map-none')){setRotation([]);return;}
+            if(b.dataset.rotation){const a=rotation(),i=Number(b.dataset.index),j=i+Number(b.dataset.rotation);if(j>=0&&j<a.length){[a[i],a[j]]=[a[j],a[i]];setRotation(a);}return;}
+            if(b.dataset.removeMap){setRotation(rotation().filter(m=>m!==b.dataset.removeMap));return;}
             if(b.hasAttribute('data-close')){clearInterval(timer);overlay.remove();overlay=null;return;}
             if(b.hasAttribute('data-new')){selected='srv_'+Date.now().toString(36);renderForm();message('Choisis un préréglage, ajuste les options puis enregistre.');return;}
             if(b.dataset.profile){selected=b.dataset.profile;renderForm(current());message('');updateAddress();run(poll);}
             if(b.dataset.action)run(()=>act(b.dataset.action));
             if(b.dataset.cmd)run(()=>rcon(b.dataset.cmd));
             if(b.hasAttribute('data-map'))run(()=>{const map=overlay.querySelector('.hmwh-live-map').value;if(!/^[a-zA-Z0-9_]+$/.test(map))throw Error('Choisis une carte.');return rcon('map '+map);});
-            if(b.hasAttribute('data-bots'))run(()=>{const p=values();if(p.bots>p.players-1)throw Error('Il faut réserver au moins une place pour un joueur.');return rcon(`set warlink_bot_count ${p.bots}; set warlink_bot_difficulty ${p.difficulty}`);});
-            if(b.hasAttribute('data-publish'))run(async()=>{const choice=await window.showMessageBox('Publier dans la communauté WARLINK','Ton adresse IP publique, le port, le nom du serveur, la carte et le nombre de joueurs seront visibles aux utilisateurs WARLINK. Les mots de passe ne sont pas publiés.',['Annuler','Publier']);if(choice!==1)return;const r=await api('publish',{id:selected});message(r.message);await window.ServersView.refreshCommunity();});
+            if(b.hasAttribute('data-bots'))run(()=>{const p=values();if(p.bots>p.players-1)throw Error('Il faut réserver au moins une place pour un joueur.');return rcon(`set warlink_bot_count ${p.bots}; set warlink_bot_difficulty ${p.difficulty}; set warlink_bot_weapons ${p.botWeapons}; set warlink_bot_balance ${p.botBalance?1:0}`);});
+            if(b.hasAttribute('data-publish'))run(async()=>{const choice=await window.showMessageBox('Publier dans la communauté WARLINK','Ton adresse IP publique, le port, le nom du serveur, la carte et le nombre de joueurs seront visibles aux utilisateurs WARLINK. Les mots de passe ne sont pas publiés.',['Annuler','Publier']);if(choice!==1)return;let r;try{r=await api('publish',{id:selected});}catch(e){networkHelp(e.message);return;}message(r.message);await window.ServersView.refreshCommunity();});
             if(b.hasAttribute('data-unpublish'))run(async()=>{const r=await api('unpublish',{id:selected});message(r.message);window.dispatchEvent(new Event('warlink-hmw-profiles-changed'));});
             if(b.hasAttribute('data-join'))run(async()=>{if(!current())throw Error('Choisis un profil enregistré.');const result=await api('join',{id:selected});message(result.message);});
         });
-        overlay.addEventListener('submit',event=>{event.preventDefault();if(event.target.classList.contains('hmwh-rcon-form')){run(()=>rcon(event.target.elements.command.value));return;}run(async()=>{if(!event.target.reportValidity())return;const p=values();if(p.bots>p.players-1)throw Error('Réserve une place pour un humain : bots ≤ places − 1.');await api('save',{id:selected,profile:p});await refreshList();renderForm(current());updateAddress();message('Profil enregistré. Tu peux démarrer le serveur.');});});
-        overlay.addEventListener('input',event=>{if(['players','bots','humans'].includes(event.target.name) && event.target.value !== '')syncAllocation(event.target.name);});
+        overlay.addEventListener('submit',event=>{event.preventDefault();if(event.target.classList.contains('hmwh-rcon-form')){run(()=>rcon(event.target.elements.command.value));return;}run(async()=>{if(!event.target.reportValidity())return;const p=values();if(!p.rotation.length)throw Error('Sélectionne au moins une carte.');if(p.bots>p.players-1)throw Error('Réserve une place pour un humain : bots ≤ places − 1.');await api('save',{id:selected,profile:p});await refreshList();renderForm(current());updateAddress();message('Profil enregistré. Tu peux démarrer le serveur.');});});
+        overlay.addEventListener('input',event=>{if(event.target.hasAttribute('data-map-search'))renderMaps();if(['players','bots','humans'].includes(event.target.name) && event.target.value !== '')syncAllocation(event.target.name);});
         overlay.addEventListener('change',event=>{
+            if(event.target.hasAttribute('data-map-family')){renderMaps();return;}
+            if(event.target.dataset.mapChoice){const a=rotation(),m=event.target.dataset.mapChoice;setRotation(event.target.checked?[...a,m]:a.filter(v=>v!==m));return;}
             if(['players','bots','humans'].includes(event.target.name))syncAllocation(event.target.name);
             const f=overlay.querySelector('.hmwh-form');if(!f)return;
-            if(event.target.name==='mapPick'&&event.target.value){f.elements.rotation.value+=(f.elements.rotation.value.trim()?'\n':'')+event.target.value;event.target.value='';}
             if(event.target.name==='preset'){
                 const v=event.target.value;f.elements.access.value=v==='public'?'public':'private';f.elements.players.value=v==='duel'?2:12;f.elements.bots.value=v==='training'?9:0;f.elements.mode.value=v==='duel'?'dm':'war';f.elements.rotation.value=v==='duel'?'mp_rust':'mp_rust\nmp_terminal';f.elements.scoreLimit.value=v==='duel'?20:75;f.elements.password.value=v==='public'?'':('amis-'+Math.random().toString(36).slice(2,8));
             }
-            if(event.target.name==='preset')syncAllocation();
+            if(event.target.name==='preset'){syncAllocation();renderMaps();}
             updateAddress();
         });
         try{await refreshList();selected=profiles.find(p=>p.id===profileId)?.id||profiles[0]?.id||'srv_'+Date.now().toString(36);renderForm(current());updateAddress();await poll();timer=setInterval(poll,2500);}catch(e){message(e.message,true);}
     }
+
+    const mapNames={convoy:'Ambush',backlot:'Backlot',bloc:'Bloc',bog:'Bog',bog_summer:'Beach Bog',broadcast:'Broadcast',carentan:'Chinatown',cargoship:'Wet Work',citystreets:'District',countdown:'Countdown',crash:'Crash',crash_snow:'Winter Crash',creek:'Creek',crossfire:'Crossfire',farm:'Downpour',farm_spring:'Daybreak',killhouse:'Killhouse',overgrown:'Overgrown',pipeline:'Pipeline',shipment:'Shipment',showdown:'Showdown',strike:'Strike',vacant:'Vacant',abandon:'Carnival',afghan:'Afghan',alpha:'Lockdown',boneyard:'Scrapyard',bootleg:'Bootleg',bravo:'Mission',brecourt:'Wasteland',checkpoint:'Karachi',compact:'Salvage',complex:'Bailout',courtyard_ss:'Erosion',derail:'Derail',dome:'Dome',estate:'Estate',favela:'Favela',fuel2:'Fuel',hardhat:'Hardhat',highrise:'Highrise',invasion:'Invasion',lambeth:'Fallen',mogadishu:'Bakaara',nightshift:'Skidrow',paris:'Resistance',plaza2:'Arkaden',quarry:'Quarry',rundown:'Rundown',rust:'Rust',seatown:'Seatown',storm:'Storm',subbase:'Sub Base',terminal:'Terminal',trailerpark:'Trailer Park',underground:'Underground',underpass:'Underpass'};
+    const mwrMaps=new Set('convoy backlot bloc bog bog_summer broadcast carentan cargoship citystreets countdown crash crash_snow creek crossfire farm farm_spring killhouse overgrown pipeline shipment showdown strike vacant'.split(' ')),mw3Maps=new Set('alpha bootleg bravo courtyard_ss dome hardhat lambeth mogadishu paris plaza2 seatown underground'.split(' '));
+    const mapFamily=m=>{const k=m.replace(/^mp_/,'');return mwrMaps.has(k)?'MWR':mw3Maps.has(k)?'MW3':mapNames[k]?'MW2':'custom';};
+    const mapLabel=m=>mapNames[m.replace(/^mp_/,'')]||m;
+    function rotation(){return overlay.querySelector('[name=rotation]').value.split(/\s+/).filter(Boolean);}
+    function setRotation(a){overlay.querySelector('[name=rotation]').value=[...new Set(a)].join(' ');renderMaps();}
+    function renderMaps(){const host=overlay.querySelector('.hmwh-map-catalog');if(!host)return;const a=rotation(),q=overlay.querySelector('[data-map-search]').value.toLowerCase();
+        const family=overlay.querySelector('[data-map-family]').value;host.innerHTML=maps.filter(m=>(!family||mapFamily(m)===family)&&(mapLabel(m)+' '+m).toLowerCase().includes(q)).map(m=>'<label class="hmwh-map-card '+(a.includes(m)?'selected':'')+'"><span class="hmwh-map-art" aria-hidden="true">▦</span><span><strong>'+esc(mapLabel(m))+'</strong><small>'+esc(mapFamily(m))+' · '+esc(m)+'</small></span><input type="checkbox" data-map-choice="'+esc(m)+'" '+(a.includes(m)?'checked':'')+'></label>').join('');
+        overlay.querySelector('.hmwh-map-count').textContent=a.length+' carte(s)';overlay.querySelector('.hmwh-map-rotation').innerHTML=a.map((m,i)=>'<div class="hmwh-map-chip"><span class="hmwh-map-index">'+(i+1)+'</span><strong>'+esc(mapLabel(m))+'</strong><button type="button" data-rotation="-1" data-index="'+i+'" aria-label="Monter '+esc(mapLabel(m))+'" '+(i===0?'disabled':'')+'>↑</button><button type="button" data-rotation="1" data-index="'+i+'" aria-label="Descendre '+esc(mapLabel(m))+'" '+(i===a.length-1?'disabled':'')+'>↓</button><button type="button" data-remove-map="'+esc(m)+'" aria-label="Retirer '+esc(mapLabel(m))+'">×</button></div>').join('')||'<p class="hmwh-muted">Sélectionne au moins une carte avant d’enregistrer.</p>';
+    }
+    function colorLog(log){return log.split(/\r?\n/).map(line=>{const type=/error|fatal|failed|exception|script runtime/i.test(line)?'error':/warn|protected|missing|not found|could not|bad request|not seem to be registered|read only/i.test(line)?'warn':/WARLINK_.*READY|success|server started|complete|listening/i.test(line)?'success':/map|fastfile|zone/i.test(line)?'map':/model|material|texture|image/i.test(line)?'asset':'';return '<span class="hmwh-log-'+type+'">'+esc(line)+'</span>';}).join('\n');}
+    function networkHelp(error=''){const p=values(),text=(error?error+'\n\n':'')+'Profil : '+p.name.replace(/\^[0-9]/g,'')+'\nPort à rediriger : '+p.port+' en TCP ET UDP.\nLe port 27018 ne couvre pas un serveur sur 27017. Chaque profil simultané a besoin de son propre port.\n\n1. Enregistre, démarre et attends Actif.\n2. Autorise uniquement warlink-hmw-'+selected+'.exe sur le port '+p.port+' dans le pare-feu Windows.\n3. Sur la box : redirige le port externe '+p.port+' TCP/UDP vers ce PC et le port interne '+p.port+'.\n4. Clique Publier sur WARLINK pour vérifier l’accès depuis Internet.\n\nAucune clé officielle HMW n’est nécessaire pour WARLINK. Ne désactive pas ton pare-feu et n’active pas de DMZ.';window.showMessageBox('Connexion à la communauté WARLINK',esc(text).replace(/\n/g,'<br>'),['Fermer']);}
+
     function updateAddress(){const form=overlay?.querySelector('.hmwh-form');if(form)overlay.querySelector('.hmwh-address').textContent=`connect 127.0.0.1:${form.elements.port.value}`;}
     document.addEventListener('click',e=>{if(e.target.closest('[data-hmw-host]'))open();});
     window.HMWHost={open};
