@@ -396,7 +396,7 @@ namespace commands::game_commands
                             continue;
                         }
 
-                        if (utils::io::write_file(marker_path, "// seeded by CB Servers Launcher"))
+                        if (utils::io::write_file(marker_path, "// seeded by WARLINK"))
                         {
                             printf("Seeded iw3sp_mod config marker: %s\n", utils::string::path_to_utf8(marker_path).data());
                         }

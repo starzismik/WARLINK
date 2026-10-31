@@ -255,7 +255,7 @@ namespace commands::ui_commands
             const auto programs = utils::com::get_start_menu_programs_path();
             if (!programs.empty())
             {
-                const auto sm_dir = programs / L"CB Servers";
+                const auto sm_dir = programs / L"WARLINK";
                 std::error_code ec;
                 std::filesystem::create_directories(sm_dir, ec);
                 record(sm_dir / (safe_name + L".url"));

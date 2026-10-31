@@ -2,6 +2,7 @@
 #include "mod_commands.hpp"
 #include "cef/cef_ui.hpp"
 #include "mods/mod_store.hpp"
+#include "mods/mod_language.hpp"
 #include "mods/mod_updater.hpp"
 
 #include <utils/com.hpp>
@@ -138,6 +139,30 @@ namespace commands::mod_commands
 
     void register_commands(cef::cef_ui& cef_ui, command_context& ctx)
     {
+        cef_ui.add_command("mod-language", [&ctx](const rapidjson::Value& value, rapidjson::Document& response)
+        {
+            const auto config = config_or_fail(ctx, value, response);
+            if (!config) return;
+            if (config->game_key != "bo3") { set_result(response, false, "Disponible pour Black Ops III uniquement."); return; }
+            if (!mods::try_claim_install(*config)) { set_busy(response); return; }
+            try {
+                const auto path = mods::mod_path(*config, mods::json_string(value, "id"));
+                if (!path || !std::filesystem::is_directory(*path)) throw std::runtime_error("Contenu introuvable.");
+                size_t changed = 0;
+                if (mods::json_string(value,"action") == "change" && (utils::nt::is_process_running("blackops3.exe") || utils::nt::is_process_running("boiii.exe"))) throw std::runtime_error("Fermez Black Ops III avant de changer la langue.");
+                if (mods::json_string(value,"action") == "change") changed = mods::language::change(*path,mods::json_string(value,"from"),mods::json_string(value,"to"));
+                const auto languages = mods::language::detect(*path);
+                set_result(response,true);
+                auto& a=response.GetAllocator();
+                rapidjson::Value list(rapidjson::kArrayType);
+                for(const auto& code:languages) list.PushBack(make_string(code,a),a);
+                response.AddMember("languages",list,a);
+                response.AddMember("changed",static_cast<uint64_t>(changed),a);
+                response.AddMember("path",make_string(utils::string::path_to_utf8(*path),a),a);
+            } catch(const std::exception& e) { set_result(response,false,e.what()); }
+            mods::release_install(*config);
+        });
+
         cef_ui.add_command("get-mods-folder", [&ctx](const rapidjson::Value& value, rapidjson::Document& response)
         {
             response.SetNull();

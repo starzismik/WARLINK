@@ -7,6 +7,7 @@
     const escapeHtml = value => GameUtils.escapeHtml(value);
     let searchTimer = null;
     let refreshTimer = null;
+    const communityRequests = new WeakMap();
 
     function t(key, variables) {
         return window.LauncherI18n ? window.LauncherI18n.t(key, variables) : key;
@@ -82,6 +83,8 @@
         const modes = s.caps.modes || [];
 
         panel.innerHTML = `
+            ${gameId === 'hmw-mod' ? '<section class="hmw-owned-servers"><div class="servers-toolbar"><strong>Mes serveurs HorizonMW</strong><button class="mods-btn" data-hmw-host>＋ Créer / gérer mes serveurs</button><button class="mods-btn" data-hmw-guide>Guide réseau</button><button class="mods-btn" data-hmw-view>Corriger la visée</button></div><div class="hmw-owned-list">Chargement des profils locaux…</div><div class="hmw-community-head"><h3>Communauté WARLINK</h3><button class="mods-btn" data-community-refresh>↻ Actualiser</button><small class="hmw-community-updated" role="status">Actualisation automatique · 15 s</small></div><p>Serveurs vérifiés depuis notre annuaire, indépendants de la liste officielle HMW.</p><div class="hmw-community-list">Chargement de la communauté…</div></section>' : ''}
+            ${gameId === 'hmw-mod' ? `<details class="hmw-official-servers" ${s.horizonExpanded?'open':''}><summary><span class="hmw-expand-icon" aria-hidden="true">+</span><span class="hmw-official-label">${s.horizonExpanded?'Masquer':'Afficher'} les serveurs HorizonMW</span><small>Liste HorizonMW</small></summary>` : ''}
             <div class="servers-toolbar">
                 <div class="search-field">
                     <input type="text" class="servers-search" placeholder="${escapeHtml(t('servers.searchPlaceholder'))}" value="${escapeHtml(s.query)}" />
@@ -110,8 +113,13 @@
                 <span class="servers-updated"></span>
             </div>
             <div class="servers-list-host"></div>
+            ${gameId === 'hmw-mod' ? '</details>' : ''}
         `;
 
+        if(gameId === 'hmw-mod'){loadOwnedServers(panel);loadCommunity(panel);}
+        panel.querySelector('[data-community-refresh]')?.addEventListener('click',()=>refreshCommunity(panel));
+        const official=panel.querySelector('.hmw-official-servers');
+        if(official)official.addEventListener('toggle',()=>{s.horizonExpanded=official.open;official.querySelector('.hmw-official-label').textContent=(official.open?'Masquer':'Afficher')+' les serveurs HorizonMW';});
         const input = panel.querySelector('.servers-search');
         const clear = panel.querySelector('.servers-search-clear');
         const setQuery = value => {
@@ -166,7 +174,47 @@
         }
     }
 
+    async function loadCommunity(panel) {
+        const host=panel.querySelector('.hmw-community-list');if(!host)return;
+        const requestId=(communityRequests.get(panel)||0)+1;communityRequests.set(panel,requestId);
+        const button=panel.querySelector('[data-community-refresh]'),updated=panel.querySelector('.hmw-community-updated');
+        const current=()=>communityRequests.get(panel)===requestId && host.isConnected && panel.querySelector('.hmw-community-list')===host;
+        if(button){button.disabled=true;button.textContent='Actualisation…';}
+        try {
+            const r=await window.executeCommand('hmw-host',{action:'community-list'});if(!current())return;if(!r?.ok)throw Error(r?.error||'Annuaire indisponible');
+            host.innerHTML=r.servers.map(p=>`<div class="mods-row"><strong class="warlink-colored-name">${window.WarlinkName.html(p.name)}</strong><span class="hmw-state is-active">Actif · vérifié</span><span> · ${escapeHtml(p.map)} · ${p.players}/${p.maxPlayers} joueurs · ${escapeHtml(p.id)}${p.locked?' · mot de passe':''}</span><button class="mods-btn" data-community-join="${escapeHtml(p.id)}" data-locked="${p.locked?'1':'0'}">Rejoindre</button></div>`).join('') || '<p>Aucun serveur communautaire en ligne. Démarre ton serveur public puis utilise « Publier sur WARLINK » dans son gestionnaire.</p>';
+            host.dataset.loaded='true';if(updated)updated.textContent='Mis à jour à '+new Date().toLocaleTimeString('fr-FR')+' · auto 15 s';
+            host.querySelectorAll('[data-community-join]').forEach(b=>b.addEventListener('click',async()=>{try{
+                let password='';if(b.dataset.locked==='1'){const choice=await window.showMessageBox('Mot de passe','<input id="hmw-community-password" type="password" maxlength="64" autocomplete="off">',['Annuler','Rejoindre']);if(choice!==1)return;password=document.getElementById('hmw-community-password').value;}
+                const result=await window.executeCommand('hmw-host',{action:'join-remote',endpoint:b.dataset.communityJoin,password});if(!result?.ok)throw Error(result?.error||'Connexion impossible');window.showMessageBox('Rejoindre HorizonMW',escapeHtml(result.message),['OK']);
+            }catch(e){window.showToast(e.message,'error');}}));
+        }catch(e){if(!current())return;if(updated)updated.textContent='Actualisation impossible · nouvel essai automatique';if(!host.dataset.loaded)host.textContent='Annuaire communautaire : '+e.message;}
+        finally{if(current()&&button){button.disabled=false;button.textContent='↻ Actualiser';}}
+    }
+    async function refreshCommunity(panel=query('hmw-mod')) {
+        if(!panel)return;
+        await Promise.allSettled([loadOwnedServers(panel),loadCommunity(panel)]);
+    }
+    document.addEventListener('click',async event=>{
+        if(event.target.closest('[data-hmw-guide]'))window.showMessageBox('Héberger un serveur WARLINK',
+        "<div class=\"hmw-network-guide\"><p class=\"hmw-guide-intro\">De la création du serveur à sa publication dans la communauté.</p><ol class=\"hmw-guide-steps\"><li><div><h4>Préparer ton serveur</h4><p>Configure HorizonMW dans la bibliothèque, puis crée un profil serveur. Choisis <strong>Public</strong> et un port libre, par exemple <code>27018</code>.</p></div></li><li><div><h4>Autoriser le pare-feu Windows</h4><p>Autorise uniquement <code>warlink-hmw-&lt;profil&gt;.exe</code> sur le port choisi, en <strong>TCP et UDP</strong>.</p></div></li><li><div><h4>Configurer la box</h4><p>Dans <strong>NAT / redirection de ports</strong>, redirige ce même port externe TCP et UDP vers l’adresse IPv4 locale du PC et le même port interne. <strong>Ne désactive pas le pare-feu et n’active pas de DMZ.</strong></p></div></li><li><div><h4>Conserver la bonne adresse</h4><p>Réserve l’adresse IPv4 de ton PC dans le DHCP de la box. Si ton opérateur utilise une IPv4 partagée / CGNAT, demande une IPv4 publique ou utilise un hébergement adapté.</p></div></li><li><div><h4>Publier dans WARLINK</h4><p>Démarre le serveur, attends le statut <strong>Actif</strong>, puis clique <strong>Publier sur WARLINK</strong>. L’annuaire vérifie TCP et UDP depuis Internet. Ton IP publique, le port et les informations du serveur seront visibles.</p></div></li><li><div><h4>Inviter les joueurs</h4><p>Ils ouvrent <strong>Serveurs → HorizonMW → Communauté WARLINK → Rejoindre</strong>. Aucune clé HMW n’est nécessaire pour cette liste ; le navigateur officiel du jeu reste indépendant.</p></div></li></ol><aside class=\"hmw-guide-note\"><strong>À garder en tête</strong><p>Le PC doit rester allumé. WARLINK actualise la communauté toutes les 15 secondes ; les vérifications réseau de l’annuaire ont lieu environ toutes les 30 secondes. Un serveur hors ligne disparaît en moins de 2 minutes. Ne partage jamais ton mot de passe RCON.</p></aside></div>",['Fermer']);
+        if(event.target.closest('[data-hmw-view]')){const choice=await window.showMessageBox('Visée et champ de vision','Une échelle cg_fovScale élevée éloigne visuellement l’arme. Ce bouton remet uniquement cg_fovScale à 1, conserve ton FOV et sauvegarde la configuration précédente. Ferme le jeu avant d’appliquer.',['Annuler','Rétablir une visée normale']);if(choice!==1)return;try{const r=await window.executeCommand('hmw-host',{action:'reset-view'});if(!r?.ok)throw Error(r?.error);window.showToast(r.message,'success');}catch(e){window.showToast(e.message,'error');}}
+    });
+
+    async function loadOwnedServers(panel) {
+        const host=panel.querySelector('.hmw-owned-list');if(!host)return;
+        try {
+            const r=await window.executeCommand('hmw-host',{action:'list'});
+            if(!r?.ok)throw Error(r?.error || 'Lecture impossible');
+            host.innerHTML=r.profiles.map(p=>`<div class="mods-row"><strong class="warlink-colored-name">${window.WarlinkName.html(p.name)}</strong>${p.ready?'<span class="hmw-state is-active">Actif</span>':p.running?'<span class="hmw-state is-starting">Chargement</span>':'<span class="hmw-state is-stopped">Arrêté</span>'}<span>127.0.0.1:${p.port}</span><button class="mods-btn" data-own-profile="${escapeHtml(p.id)}">Gérer / rejoindre</button></div>`).join('') || '<p>Aucun serveur créé. Utilise le bouton ci-dessus.</p>';
+            host.querySelectorAll('[data-own-profile]').forEach(b=>b.addEventListener('click',()=>window.HMWHost.open(b.dataset.ownProfile)));
+        } catch(error) {host.textContent='Profils locaux indisponibles : '+error.message;}
+    }
+
+    window.addEventListener('warlink-hmw-profiles-changed',()=>{const panel=query('hmw-mod');if(panel?.querySelector('.hmw-owned-list'))refreshCommunity(panel);});
+
     async function loadServers(gameId, silent) {
+        if(gameId === 'hmw-mod'){const panel=query(gameId);if(panel){loadOwnedServers(panel);loadCommunity(panel);}}
         const s = getState(gameId);
         if (s.loading) return;
 
@@ -418,7 +466,7 @@
     // having the page signal deactivation.
     function activeServersGame() {
         if (document.visibilityState !== 'visible') return null;
-        const panel = document.querySelector('.servers-panel[data-game]');
+        const panel = [...document.querySelectorAll('.servers-panel[data-game]')].find(p=>p.offsetParent!==null);
         if (!panel || panel.offsetParent === null) return null;
         return panel.dataset.game;
     }
@@ -429,6 +477,9 @@
             const gameId = activeServersGame();
             if (gameId && state[gameId]) loadServers(gameId, true);
         }, STALE_MS);
+        setInterval(() => {if(activeServersGame()==='hmw-mod')refreshCommunity();},15000);
+        const refreshVisible=()=>{if(activeServersGame()==='hmw-mod')refreshCommunity();};
+        window.addEventListener('focus',refreshVisible);document.addEventListener('visibilitychange',refreshVisible);
         setInterval(() => {
             const gameId = activeServersGame();
             if (gameId && state[gameId]) renderUpdated(gameId);
@@ -437,6 +488,7 @@
 
     window.ServersView = {
         render,
+        refreshCommunity,
         supports: gameId => !!(window.ServersService && window.ServersService.supports(gameId))
     };
 })();

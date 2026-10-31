@@ -10,7 +10,7 @@ namespace deep_link
 {
     namespace
     {
-        constexpr auto* PIPE_NAME = L"\\\\.\\pipe\\cbservers-launcher-deeplink";
+        constexpr auto* PIPE_NAME = L"\\\\.\\pipe\\warlink-launcher-deeplink";
         constexpr size_t MAX_URL_LENGTH = 4096;
 
         std::string scheme_prefix()
@@ -116,7 +116,7 @@ namespace deep_link
             line.pop_back();
         }
 
-        // Only ever dispatch a well-formed cbservers:// URL within the size cap.
+        // Only ever dispatch a well-formed warlink:// URL within the size cap.
         if (this->listener_.running() && this->callback_ && line.size() <= MAX_URL_LENGTH && is_deep_link(line))
         {
             this->callback_(line);

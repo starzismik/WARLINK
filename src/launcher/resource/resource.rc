@@ -63,19 +63,19 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "CB Servers"
+            VALUE "CompanyName", "STARZISMIK"
 #ifdef _DEBUG
-            VALUE "FileDescription", "CB Servers Launcher (DEBUG)"
+            VALUE "FileDescription", "WARLINK (DEBUG)"
 #else
-            VALUE "FileDescription", "CB Servers Launcher"
+            VALUE "FileDescription", "WARLINK"
 #endif
             VALUE "FileVersion", VERSION_FILE
-            VALUE "InternalName", "launcher"
+            VALUE "InternalName", "WARLINK"
             VALUE "LegalCopyright", "Copyright (C) 2026 CB Servers. All rights reserved."
             VALUE "Licence", "GPLv3"
             VALUE "Info", "https://cbservers.xyz/"
-			      VALUE "OriginalFilename", "cb-launcher.exe"
-            VALUE "ProductName", "CB Servers Launcher"
+			      VALUE "OriginalFilename", "WARLINK.exe"
+            VALUE "ProductName", "WARLINK"
             VALUE "ProductVersion", VERSION_PRODUCT
         END
     END

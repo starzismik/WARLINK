@@ -166,3 +166,16 @@ wrangler.json*
 # Local cbfriends/relay dev store
 worker/*/kv.json
 /docs
+
+# WARLINK private local runtime and personal data
+/app/
+/dev/
+/release/
+.env*
+*.rar
+*.zip
+*.result.json
+**/directory-owner.json
+**/properties.json
+**/profile.json
+**/process.json

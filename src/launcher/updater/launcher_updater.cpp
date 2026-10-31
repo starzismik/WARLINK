@@ -16,13 +16,13 @@
 
 #include <rapidjson/writer.h>
 
-#define UPDATE_SERVER "https://github.com/CBServers/updater/raw/main/updater/"
+#define UPDATE_SERVER "https://raw.githubusercontent.com/starzismik/WARLINK/main/"
 
-#define UPDATE_FILE_MAIN UPDATE_SERVER "cb-launcher.json"
-#define UPDATE_FOLDER_MAIN UPDATE_SERVER "cb-launcher/"
-#define UPDATE_FILE_DEV UPDATE_SERVER "cb-launcher-dev.json"
-#define UPDATE_FOLDER_DEV UPDATE_SERVER "cb-launcher-dev/"
-#define UPDATE_HOST_BINARY "cb-launcher.exe"
+#define UPDATE_FILE_MAIN UPDATE_SERVER "update-files.json"
+#define UPDATE_FOLDER_MAIN UPDATE_SERVER "WARLINK/"
+#define UPDATE_FILE_DEV UPDATE_SERVER "update-files-dev.json"
+#define UPDATE_FOLDER_DEV UPDATE_SERVER "WARLINK-dev/"
+#define UPDATE_HOST_BINARY "WARLINK.exe"
 
 namespace launcher_updater
 {
@@ -157,22 +157,9 @@ namespace launcher_updater
 
     void launcher_updater::run() const
     {
-        const auto files = get_file_infos();
-        if (!files.empty())
-        {
-            this->cleanup_directories(files);
-        }
-
-        const auto outdated_files = this->get_outdated_files(files);
-        if (outdated_files.empty())
-        {
-            return;
-        }
-
-        this->update_host_binary(outdated_files);
-        this->update_files(outdated_files);
-
-        std::this_thread::sleep_for(1s);
+        // Upstream self-updates would overwrite WARLINK and its bundled UI.
+        // Game/client updates remain independent.
+        utils::logger::write("WARLINK: mandatory GitHub update gate initialized in product UI");
     }
 
     void launcher_updater::update_file(const updater::file_info& file) const

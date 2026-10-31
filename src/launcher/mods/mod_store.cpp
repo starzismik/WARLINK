@@ -13,12 +13,30 @@
 #include <chrono>
 #include <ctime>
 #include <random>
+#include <regex>
+#include <fstream>
 #include <miniz.h>
 
 namespace mods
 {
     namespace
     {
+        std::optional<std::filesystem::path> detected_bo3_path()
+        {
+            wchar_t steam[32768]{}; DWORD size=sizeof(steam);
+            if (RegGetValueW(HKEY_CURRENT_USER,L"Software\\Valve\\Steam",L"SteamPath",RRF_RT_REG_SZ,nullptr,steam,&size)!=ERROR_SUCCESS) return std::nullopt;
+            std::vector<std::filesystem::path> roots{std::filesystem::path(steam)};
+            std::ifstream input(roots.front()/"steamapps"/"libraryfolders.vdf");
+            const std::string vdf((std::istreambuf_iterator<char>(input)),{});
+            const std::regex pattern(R"vdf("path"\s*"([^"]+)")vdf");
+            for(std::sregex_iterator it(vdf.begin(),vdf.end(),pattern),end;it!=end;++it) roots.emplace_back(utils::string::utf8_to_path((*it)[1].str()));
+            for(const auto& root:roots) {
+                const auto game=root/"steamapps"/"common"/"Call of Duty Black Ops III";
+                if(std::filesystem::is_regular_file(game/"blackops3.exe")) return game;
+            }
+            return std::nullopt;
+        }
+
         std::mutex active_installs_mutex_;
         std::unordered_set<std::string> active_installs_;
 
@@ -256,7 +274,7 @@ namespace mods
         // steamapps/common: <library>/steamapps/workshop/content/<appid>.
         std::optional<std::filesystem::path> steam_workshop_root(const game_layout& layout, const game_config::game_config_t& config)
         {
-            const auto install = config.get_install_path();
+            const auto install = config.get_install_path().has_value() ? config.get_install_path() : (config.game_key == "bo3" ? detected_bo3_path() : std::nullopt);
             if (!layout.steam_appid || !install || install->empty())
             {
                 return std::nullopt;
@@ -636,7 +654,8 @@ namespace mods
             return utils::properties::get_appdata_folder_path("Plutonium") / "storage" / config.game_key;
         }
 
-        const auto install = config.get_install_path();
+        const auto configured_install = config.get_install_path();
+        const auto install = configured_install && !configured_install->empty() ? configured_install : (config.game_key == "bo3" ? detected_bo3_path() : std::nullopt);
         if (!install || install->empty())
         {
             return std::nullopt;

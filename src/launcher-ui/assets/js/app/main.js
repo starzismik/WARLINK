@@ -71,26 +71,7 @@ function setupButtonLabel(installStatus, busyKind, gameId) {
     return installStatus === 'partial' ? t('common.finishSetup') : t('common.setup');
 }
 
-async function initializeLanguage() {
-    let language = 'en';
-
-    if (typeof window.executeCommand === 'function') {
-        try {
-            const savedLanguage = await window.executeCommand('get-property', PROPERTY_KEYS.LAUNCHER.LANGUAGE);
-            if (savedLanguage) {
-                language = savedLanguage;
-            }
-        } catch (error) {
-            console.error('Failed to load launcher language:', error);
-        }
-    }
-
-    if (window.LauncherI18n) {
-        window.LauncherI18n.setLanguage(language);
-    }
-
-    return language;
-}
+async function initializeLanguage() { return window.WarlinkProduct.chooseLanguage(); }
 
 function getActivePageId() {
     const activeGame = document.querySelector('.game-item.active');
@@ -230,7 +211,8 @@ function applyTheme(theme) {
     } else {
         // Tactical is the bare :root baseline; the MW variant only swaps the accent tokens
         root.removeAttribute('data-theme');
-        if (theme === 'tactical-mw') root.setAttribute('data-accent', 'mw');
+        if (theme === 'starzismik') root.setAttribute('data-accent', 'starzismik');
+        else if (theme === 'tactical-mw') root.setAttribute('data-accent', 'mw');
         else root.removeAttribute('data-accent');
     }
 }
@@ -305,7 +287,7 @@ function applyOfflineIndicator() {
         }
         tag.textContent = ' ' + suffix;
     }
-    document.title = 'CB Servers Launcher ' + suffix;
+    document.title = 'WARLINK ' + suffix;
 }
 
 async function initialize() {
@@ -343,6 +325,7 @@ async function initialize() {
     }
 
     await initializeLanguage();
+    await window.WarlinkProduct.initialize();
 
     // Last known early access, so a tester's unlocked game draws unlocked from the first frame, offline too.
     if (typeof window.executeCommand === 'function') {
@@ -1549,6 +1532,7 @@ window.addEventListener('cb-progress-tick', (event) => {
 function applyCommunityVisible(visible) {
     const nav = document.getElementById('community');
     if (!nav) return;
+    visible=visible && window.WarlinkProduct.tabEnabled('community');
     nav.style.display = visible ? '' : 'none';
     if (!visible && nav.classList.contains('active')) {
         const home = document.getElementById('home');
@@ -1557,6 +1541,7 @@ function applyCommunityVisible(visible) {
 }
 
 function loadNavigationPage(page) {
+    if((page==='friends'||page==='community')&&!window.WarlinkProduct.tabEnabled(page))page='home';
     console.log(`Loading page: ${page}`);
 
     // Hide all page sections
@@ -1580,6 +1565,7 @@ function loadNavigationPage(page) {
     if (window.ModerationManager) window.ModerationManager.setActive(page === 'moderation');
 
     // Initialize page-specific functionality
+    if (page === 'discord') window.WarlinkProduct.renderDiscord();
     if (page === 'settings') {
         initializeSettingsPage();
     } else if (page === 'library') {
@@ -1722,7 +1708,7 @@ async function createGameButtons(gameId) {
     applyDownloadQueueButtonState();
 }
 
-// Resolve a friendly slug (the -launch CLI arg or a cbservers:// link) to a UI ID, or null if unknown.
+// Resolve a friendly slug (the -launch CLI arg or a warlink:// link) to a UI ID, or null if unknown.
 function resolveGameSlug(requested) {
     requested = String(requested || '').toLowerCase().trim();
     if (!requested) return null;
@@ -1836,14 +1822,14 @@ async function handleStartupDeepLink() {
     }
 }
 
-// Routes a cbservers:// URL of the form cbservers://<verb>/<game>[/<mode|item id>].
+// Routes a warlink:// URL of the form warlink://<verb>/<game>[/<mode|item id>].
 async function handleDeepLink(url) {
     if (!url || typeof url !== 'string') return;
 
     // Bring the launcher to the foreground; it may be minimized or in the tray.
     try { window.executeCommand('show'); } catch (_) {}
 
-    const SCHEME = 'cbservers://';
+    const SCHEME = 'warlink://';
     if (!url.toLowerCase().startsWith(SCHEME)) return;
 
     const rest = url.slice(SCHEME.length).split(/[?#]/)[0].replace(/\/+$/, '');
@@ -2138,7 +2124,7 @@ function stopGame(gameId) {
 
 async function showSetupFlow(gameId) {
     console.log(`Setup button clicked for ${gameId}`);
-    // -install, -launch and cbservers:// links reach here without passing a coming-soon button.
+    // -install, -launch and warlink:// links reach here without passing a coming-soon button.
     if (GameUtils.isComingSoon(gameId)) return;
 
     // Both branches of the flow need the network: a download, or client files for an existing install.
@@ -2945,59 +2931,8 @@ async function handleToggleConsole() {
     }
 }
 
-async function handleCheckForUpdates() {
-    if (!await window.guardOnline()) return;
+async function handleCheckForUpdates() { return window.WarlinkProduct.checkUpdates(true); }
 
-    const updateBtn = document.getElementById('check-updates-btn');
-    if (!updateBtn) return;
-
-    // Disable button during update check
-    updateBtn.disabled = true;
-    const originalText = updateBtn.textContent;
-    updateBtn.textContent = t('dialog.updateChecking');
-
-    // Force the browser to paint the UI changes before the blocking operation
-    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-
-    try {
-        if (typeof executeCommand === 'function') {
-            const result = await executeCommand('check-launcher-update');
-
-            if (result && result.updateComplete) {
-                await window.showMessageBox(
-                    t('dialog.updateTitle'),
-                    t('dialog.updateLatest'),
-                    [t('common.ok')]
-                );
-            }
-            else if (result && result.error) {
-                await window.showMessageBox(
-                    t('dialog.updateTitle'),
-                    t('dialog.updateFailed'),
-                    [t('common.ok')]
-                );
-            }
-            else {
-                await window.showMessageBox(
-                    t('dialog.updateTitle'),
-                    t('dialog.updateCancelled'),
-                    [t('common.ok')]
-                );
-            }
-        }
-    } catch (error) {
-        console.error('Failed to check for updates:', error);
-        await window.showMessageBox(
-            t('dialog.updateTitle'),
-            t('dialog.updateFailed'),
-            [t('common.ok')]
-        );
-    } finally {
-        // Re-enable button
-        updateBtn.disabled = false;
-        updateBtn.textContent = originalText;
-    }
-}
 
 async function loadVersion() {
     try {
@@ -3090,6 +3025,7 @@ async function initializeSettingsPage() {
     setupGlobalPlayerNameInput();
     await setupDiscordSettings();
     await setupLanguageSelect();
+    window.WarlinkProduct.bindSettings();
     setupThemeSelect();
     setupPlayerCountSelect();
 

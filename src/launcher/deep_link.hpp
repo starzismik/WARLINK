@@ -9,12 +9,12 @@
 namespace deep_link
 {
     // The URL scheme name (without "://").
-    constexpr const char* SCHEME = "cbservers";
+    constexpr const char* SCHEME = "warlink";
 
-    // The cbservers:// URL passed on the command line, if any.
+    // The warlink:// URL passed on the command line, if any.
     std::optional<std::string> get_arg();
 
-    // Hands a cbservers:// URL to the running instance over the pipe; true once accepted.
+    // Hands a warlink:// URL to the running instance over the pipe; true once accepted.
     bool forward(const std::string& url);
 
     // Named-pipe listener: receives forwarded URLs and routes them to the UI.

@@ -130,8 +130,8 @@ function mockCommand(command, data) {
             };
         case 'get-version':
             return {
-                version: 'UI preview',
-                versionFile: 'UI preview',
+                version: '1.0.0',
+                versionFile: '1.0.0.0',
                 gitHash: '00000000',
                 gitBranch: 'preview'
             };

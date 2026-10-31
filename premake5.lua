@@ -194,6 +194,21 @@ newaction {
             versionHeader:write("// Alias definitions\n")
             versionHeader:write("#define VERSION GIT_DESCRIBE\n")
             versionHeader:write("#define SHORTVERSION VERSION_PRODUCT\n")
+            versionHeader:write([=[
+// WARLINK release; upstream Git metadata retained.
+#undef VERSION
+#define VERSION "1.0.0"
+#undef SHORTVERSION
+#define SHORTVERSION "1.0.0"
+#undef VERSION_PRODUCT_RC
+#define VERSION_PRODUCT_RC 1,0,0
+#undef VERSION_FILE_RC
+#define VERSION_FILE_RC 1,0,0,0
+#undef VERSION_PRODUCT
+#define VERSION_PRODUCT "1.0.0"
+#undef VERSION_FILE
+#define VERSION_FILE "1.0.0.0"
+]=])
             versionHeader:close()
             local versionHeader = assert(io.open(wks.location .. "/src/version.hpp", "w"))
             versionHeader:write("/*\n")
@@ -276,7 +291,7 @@ project "cb-launcher"
 kind "WindowedApp"
 language "C++"
 
-targetname "cb-launcher"
+targetname "WARLINK"
 
 pchheader "std_include.hpp"
 pchsource "src/launcher/std_include.cpp"

@@ -9,8 +9,8 @@ namespace utils::notification
 {
     // Windows resolves an unpackaged app's toasts through a Start Menu shortcut stamped with this
     // AUMID, so main.cpp's shortcut stamp and the toast layer must agree on it exactly.
-    constexpr const wchar_t* APP_USER_MODEL_ID = L"CBServers.Launcher";
-    constexpr const wchar_t* APP_NAME = L"CB Servers Launcher";
+    constexpr const wchar_t* APP_USER_MODEL_ID = L"STARZISMIK.WARLINK";
+    constexpr const wchar_t* APP_NAME = L"WARLINK";
 
     struct options
     {

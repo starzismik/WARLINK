@@ -2,13 +2,14 @@
 <html lang="en">
 
 <head>
-    <title>CB Servers Launcher</title>
+    <title>WARLINK</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="preload" href="./assets/fonts/rajdhani-600.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="./assets/fonts/rajdhani-700.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="./assets/fonts/ibm-plex-mono-400.woff2" as="font" type="font/woff2" crossorigin>
-    <link href="./assets/css/main.css" rel="stylesheet" />
+    <link href="./assets/css/warlink-product.css" rel="stylesheet" />
+    <link href="./assets/css/main.css" rel="stylesheet" /><link href="./assets/css/hmw-host.css" rel="stylesheet" />
     <script src="./assets/js/core/utils.js"></script>
     <script src="./assets/js/core/i18n.js"></script>
     <script src="./assets/js/core/command.js"></script>
@@ -35,16 +36,17 @@
     <script src="./assets/js/popups/redist-popup.js"></script>
     <script src="./assets/js/popups/mod-detail-popup.js"></script>
     <script src="./assets/js/app/mods-view.js"></script>
+    <script src="./assets/js/app/warlink-name.js"></script>
     <script src="./assets/js/app/servers-view.js"></script>
     <script src="./assets/js/app/game-hub.js"></script>
     <script src="./assets/js/app/views.js"></script>
-    <script src="./assets/js/app/main.js"></script>
+    <script src="./assets/js/app/warlink-product.js"></script><script src="./assets/js/app/main.js"></script><script src="./assets/js/app/hmw-host.js"></script>
 </head>
 
 <body class="hidden">
     <div class="window">
         <div class="title-bar">
-            <span class="title-text">CB SERVERS LAUNCHER</span>
+            <span class="title-text"><span class="warlink-title-arrow" aria-hidden="true"></span><span class="title-name">WARLINK</span><span class="title-author">par STARZISMIK</span><span class="title-version">1.0.0</span></span>
             <div class="window-controls">
                 <button class="control-btn" id="minimize-button" data-i18n-title="window.minimize" title="Minimize"><span class="control-icon minimize-icon"></span></button>
                 <button class="control-btn" id="maximize-button" data-i18n-title="window.maximize" title="Maximize"><span class="control-icon maximize-icon"></span></button>
@@ -56,11 +58,11 @@
             <aside class="sidebar">
                 <div class="sidebar-brand">
                     <div class="sidebar-logo">
-                        <img src="./assets/img/brand/cb-hero.png" alt="CB Launcher">
+                        <img src="./assets/img/brand/warlink-w.svg" alt="WARLINK">
                     </div>
                     <div class="sidebar-brand-text">
-                        <span class="sidebar-brand-title">CB Servers</span>
-                        <span class="sidebar-brand-sub" data-i18n="brand.launcher">Launcher</span>
+                        <span class="sidebar-brand-title">WARLINK</span>
+                        <span class="sidebar-brand-sub" >par STARZISMIK</span>
                     </div>
                 </div>
 
@@ -81,16 +83,17 @@
                         <div class="nav-icon mods-icon"></div>
                         <span class="nav-label" data-i18n="nav.mods">Mods</span>
                     </div>
-                    <div class="nav-item" id="friends">
+                    <div class="nav-item" id="friends" hidden>
                         <div class="nav-icon friends-icon"></div>
                         <span class="nav-label" data-i18n="nav.friends">Friends</span>
                         <span class="nav-badge" id="friends-badge" style="display:none;">0</span>
                     </div>
-                    <div class="nav-item" id="community">
+                    <div class="nav-item" id="community" hidden>
                         <div class="nav-icon community-icon"></div>
                         <span class="nav-label" data-i18n="nav.community">Community</span>
                         <span class="nav-badge" id="community-badge" style="display:none;">0</span>
                     </div>
+                    <div class="nav-item" id="discord"><div class="nav-icon warlink-discord-icon"></div><span class="nav-label">Discord</span></div>
                     <div class="nav-item" id="moderation" style="display:none;">
                         <div class="nav-icon settings-icon"></div>
                         <span class="nav-label" data-i18n="nav.moderation">Moderation</span>
@@ -173,10 +176,10 @@
 
                     <section class="section" id="welcome-section">
                         <div class="section-head">
-                            <div class="section-title" data-i18n="home.welcomeTitle">Welcome to CB Launcher</div>
+                            <div class="section-title" data-i18n="home.welcomeTitle">Welcome to WARLINK</div>
                         </div>
                         <div class="welcome-card">
-                            <div class="welcome-body" data-i18n-html="home.welcomeBody">Welcome to CB Servers Launcher! Your one-stop launcher for Call of Duty community clients. Install, update, and play supported clients all from one place. Head to the <strong>Library</strong> tab to browse every available client and start playing. Need a hand? Click the <strong>?</strong> next to <strong>Settings</strong> at the bottom of the sidebar or check out our <a href="https://docs.cbservers.xyz/launcher" target="_blank">docs</a>.</div>
+                            <div class="welcome-body" data-i18n-html="home.welcomeBody">Welcome to WARLINK! Your one-stop launcher for Call of Duty community clients. Install, update, and play supported clients all from one place. Head to the <strong>Library</strong> tab to browse every available client and start playing. Need a hand? Click the <strong>?</strong> next to <strong>Settings</strong> at the bottom of the sidebar or check out our <a href="https://docs.cbservers.xyz/launcher" target="_blank">docs</a>.</div>
                             <div class="welcome-disclaimer" data-i18n="home.disclaimer">This launcher is not affiliated with or endorsed by IW4x, Plutonium, AlterWare, Aurora, HorizonMW, CoD4x Project, IW3SP-Mod, CoDExtended, T6SP-Mod, H2-Mod, or Project BO4. Please do not contact the original client maintainers with support requests regarding this launcher.</div>
                         </div>
                     </section>
@@ -185,7 +188,7 @@
                 <div class="page-section" id="library-page" style="display: none;">
                     <div class="page-header">
                         <div class="page-title" data-i18n="library.title">Library</div>
-                        <div class="page-subtitle" data-i18n="library.subtitle">Call of Duty clients available through CB Launcher.</div>
+                        <div class="page-subtitle" data-i18n="library.subtitle">Call of Duty clients available through WARLINK.</div>
                     </div>
 
                     <div class="library-toolbar">
@@ -260,6 +263,7 @@
                     <div id="community-body"></div>
                 </div>
 
+                <div class="page-section" id="discord-page" style="display:none"><div class="warlink-discord-host"></div></div>
                 <div class="page-section" id="support-page" style="display: none;">
                     <div class="page-header">
                         <div class="page-title" data-i18n="support.title">Support</div>
@@ -302,10 +306,10 @@
                         </section>
                     </div>
                     <div class="support-footer">
-                        <span data-i18n="support.noteBody">This launcher is not affiliated with IW4x, Plutonium, AlterWare, Aurora, HorizonMW, CoD4x Project, IW3SP-Mod, CoDExtended, T6SP-Mod, H2-Mod, or Project BO4. Please use CB Servers support channels for this launcher and its forks.</span>
+                        <span data-i18n="support.noteBody">This launcher is not affiliated with IW4x, Plutonium, AlterWare, Aurora, HorizonMW, CoD4x Project, IW3SP-Mod, CoDExtended, T6SP-Mod, H2-Mod, or Project BO4. WARLINK is developed and maintained by STARZISMIK.</span>
                         <div class="support-footer-links">
-                            <a href="#" onclick="window.executeCommand('open-url', { url: 'https://github.com/CBServers/cb-launcher/issues/new' }); return false;" data-i18n="support.reportBug">Report a bug</a>
-                            <a href="https://github.com/CBServers/cb-launcher" target="_blank" data-i18n="support.github">CB Servers GitHub</a>
+                            <a href="#" onclick="window.showMessageBox('Support WARLINK', 'WARLINK est développé et maintenu par STARZISMIK. Pour signaler un problème, transmets-lui une description et une capture.', ['OK']); return false;" data-i18n="support.reportBug">Report a bug</a>
+                            <a href="https://github.com/CBServers/cb-launcher" target="_blank" data-i18n="support.github">Code source d’origine (GPL)</a>
                         </div>
                     </div>
                 </div>
@@ -331,7 +335,7 @@
                             <div class="setting-item inline-setting" id="setting-discord-item" style="display: none;">
                                 <div class="setting-info">
                                     <label data-i18n="settings.discord">Discord account</label>
-                                    <span class="setting-description" id="setting-discord-description" data-i18n="settings.discordBody">Link your Discord account to use the friends list. While linked, Discord friends see you as playing CB Launcher.</span>
+                                    <span class="setting-description" id="setting-discord-description" data-i18n="settings.discordBody">Link your Discord account to use the friends list. While linked, Discord friends see you as playing WARLINK.</span>
                                 </div>
                                 <div class="cdn-control">
                                     <span class="setting-discord-account" id="setting-discord-account"></span>
@@ -366,6 +370,7 @@
                                     <select class="cdn-select" id="theme-select">
                                         <option value="tactical" data-i18n="settings.themeTactical">Tactical Black Ops</option>
                                         <option value="tactical-mw" data-i18n="settings.themeTacticalMw">Tactical Modern Warfare</option>
+                                        <option value="starzismik">STARZISMIK</option>
                                         <option value="dark" data-i18n="settings.themeDark">Dark</option>
                                         <option value="navy" data-i18n="settings.themeNavy">Navy Dark</option>
                                         <option value="navy-gradient" data-i18n="settings.themeNavyGradient">Navy Gradient</option>
@@ -582,7 +587,7 @@
                                     </button>
                                 </div>
                             </div>
-                        </section>
+                        </section><section class="settings-section"><h3>WARLINK · Navigation</h3><div class="setting-item inline-setting"><div class="setting-info"><label>Amis</label><span class="setting-description">Afficher cet onglet dans la navigation.</span></div><div class="toggle-group small" data-warlink-tab="friends"><button class="toggle-btn active" data-value="false">OFF</button><button class="toggle-btn" data-value="true">ON</button></div></div><div class="setting-item inline-setting"><div class="setting-info"><label>Communauté</label><span class="setting-description">Afficher cet onglet dans la navigation.</span></div><div class="toggle-group small" data-warlink-tab="community"><button class="toggle-btn active" data-value="false">OFF</button><button class="toggle-btn" data-value="true">ON</button></div></div></section>
 
                         <section class="settings-section">
                             <h3 data-i18n="settings.maintenance">Maintenance</h3>
@@ -596,7 +601,7 @@
                     </div>
 
                     <div class="settings-footer">
-                        <div class="footer-title">CB Servers Launcher</div>
+                        <div class="footer-title">WARLINK — par STARZISMIK</div>
                         <div class="footer-version" id="version-footer">Version: Loading...</div>
                         <div class="footer-links">
                             <div class="footer-source"><a href="https://github.com/CBServers/cb-launcher" target="_blank" data-i18n="settings.source">Source</a></div>

@@ -21,7 +21,7 @@ namespace launcher_updater
         try
         {
             this->progress_ui_.emplace();
-            this->progress_ui_->set_title("CB Servers Updater");
+            this->progress_ui_->set_title("WARLINK");
             this->progress_ui_->show();
         }
         catch (...)

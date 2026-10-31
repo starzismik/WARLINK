@@ -1,4 +1,4 @@
-// Shared utility functions for the CB Servers Launcher
+// Shared utility functions for the WARLINK
 
 // Centralized property key constants
 const PROPERTY_KEYS = {
@@ -242,7 +242,7 @@ class GameUtils {
             specialSettings: ['skip-intro-cinematic'],
             version: 'T7',
             description: 'Black Ops 3 with BOIII client support for campaign, multiplayer and zombies. Includes client-specific settings such as intro-skip behavior.',
-            credits: 'BOIII is a CB Servers fork of the original BOIII/T7x client developed by momo5502 and AlterWare.',
+            credits: 'BOIII is a community fork of the original BOIII/T7x client developed by momo5502 and AlterWare.',
             accent: '#F3751B',
             assetBase: './assets/img/games/boiii',
             iconPath: './assets/img/games/boiii/icon.ico',
@@ -264,7 +264,7 @@ class GameUtils {
             specialSettings: [],
             version: 'IW6',
             description: 'Ghosts with IW6x support for campaign and multiplayer. The launcher keeps install setup and client updates in the same place.',
-            credits: 'IW6x is a CB Servers fork of the original IW6x/iw6-mod client developed by AlterWare.',
+            credits: 'IW6x is a community fork of the original IW6x/iw6-mod client developed by AlterWare.',
             accent: '#3B718C',
             assetBase: './assets/img/games/iw6x',
             iconPath: './assets/img/games/iw6x/icon.ico',
@@ -286,7 +286,7 @@ class GameUtils {
             specialSettings: [],
             version: 'S1',
             description: 'Advanced Warfare through S1x, with campaign, multiplayer, zombies and survival mode choices presented only when relevant.',
-            credits: 'S1x is a CB Servers fork of the original S1x/s1-mod client developed by AlterWare.',
+            credits: 'S1x is a community fork of the original S1x/s1-mod client developed by AlterWare.',
             accent: '#F9D406',
             assetBase: './assets/img/games/s1x',
             iconPath: './assets/img/games/s1x/icon.ico',
@@ -308,7 +308,7 @@ class GameUtils {
             specialSettings: [],
             version: 'H1',
             description: 'Modern Warfare Remastered with H1-Mod support. Campaign and multiplayer launch modes stay behind one focused client page.',
-            credits: 'H1-Mod is a CB Servers fork of the original H1-Mod client developed by Aurora.',
+            credits: 'H1-Mod is a community fork of the original H1-Mod client developed by Aurora.',
             accent: '#46D744',
             assetBase: './assets/img/games/h1-mod',
             iconPath: './assets/img/games/h1-mod/icon.ico',
@@ -330,7 +330,7 @@ class GameUtils {
             specialSettings: [],
             version: 'IW7',
             description: 'Infinite Warfare with IW7-Mod support for campaign, multiplayer and zombies. Secondary actions stay close to install maintenance.',
-            credits: 'IW7-Mod is a CB Servers fork of the original IW7-Mod client developed by Aurora.',
+            credits: 'IW7-Mod is a community fork of the original IW7-Mod client developed by Aurora.',
             accent: '#FFFFFF',
             assetBase: './assets/img/games/iw7-mod',
             iconPath: './assets/img/games/iw7-mod/icon.ico',
@@ -421,7 +421,7 @@ class GameUtils {
             specialSettings: [],
             version: 'HMW',
             description: 'HorizonMW is a faithful community remaster of Modern Warfare 2 multiplayer with additional content inspired by MW3.',
-            credits: 'HMW-Mod is a CB Servers fork of the original HorizonMW client.',
+            credits: 'HMW-Mod is a community fork of the original HorizonMW client.',
             accent: '#97838A',
             assetBase: './assets/img/games/hmw-mod',
             iconPath: './assets/img/games/hmw-mod/icon.ico',
@@ -640,7 +640,7 @@ class GameUtils {
         });
 
         // Add home page image
-        images['home'] = ['./assets/img/brand/cb-hero.png'];
+        images['home'] = ['./assets/img/brand/warlink-w.svg'];
 
         return images;
     }

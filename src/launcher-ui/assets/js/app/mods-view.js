@@ -197,7 +197,7 @@
             s.installed = installed;
             // Overridden ids compare against the hosted version; Steam's updated time is irrelevant for them.
             const steamIds = [...new Set(installed.filter(mod => mod.workshopId && !overrides[mod.workshopId]).map(mod => mod.workshopId))];
-            const times = await window.ModsService.getUpdatedTimes(gameId, steamIds);
+            const times = await window.ModsService.getUpdatedTimes(gameId, steamIds).catch(() => ({}));
             s.installed.forEach(mod => {
                 const override = overrides[mod.workshopId];
                 mod.updateAvailable = installedFor(s, mod.workshopId) === mod && (override
@@ -246,6 +246,7 @@
         host.querySelectorAll('.mods-row-folder-btn').forEach(button => {
             button.addEventListener('click', () => openModFolder(gameId, button.dataset.id));
         });
+        host.querySelectorAll('.mods-language-btn').forEach(button => button.addEventListener('click', () => changeLanguage(gameId, button.dataset.id)));
         host.querySelectorAll('.mods-uninstall-btn').forEach(button => {
             button.addEventListener('click', () => uninstallMod(gameId, button.dataset.id));
         });
@@ -285,7 +286,8 @@
         const actions = job
             ? `<span class="mods-row-progress">${escapeHtml(jobLabel(job))}</span>
                <button class="mods-btn is-danger mods-cancel-btn" data-id="${escapeHtml(mod.workshopId)}">${escapeHtml(t('mods.cancel'))}</button>`
-            : `${mod.updateAvailable ? `<button class="mods-btn mods-update-btn" data-id="${escapeHtml(mod.id)}">${escapeHtml(t('mods.update'))}</button>` : ''}
+            : `${gameId === 'boiii' ? `<button class="mods-btn mods-language-btn" data-id="${escapeHtml(mod.id)}">Langue EN / FR</button>` : ''}
+               ${mod.updateAvailable ? `<button class="mods-btn mods-update-btn" data-id="${escapeHtml(mod.id)}">${escapeHtml(t('mods.update'))}</button>` : ''}
                ${mod.workshopId && s.caps.workshop ? iconButtonHTML(mod.id, 'mods-details-btn', 'info-icon', t('mods.details')) : ''}
                ${iconButtonHTML(mod.id, 'mods-row-folder-btn', 'folder-icon', t('mods.openModFolder'))}
                ${iconButtonHTML(mod.id, 'mods-uninstall-btn is-danger', 'trash-icon', t('mods.uninstall'))}`;
@@ -387,6 +389,26 @@
         syncItem(detail.gameId, detail.id);
     });
     window.addEventListener('cb-mod-queue-changed', syncAll);
+
+    async function changeLanguage(gameId, id) {
+        const request = { game: GameUtils.getGameMapping(gameId), id };
+        try {
+            const info = await window.executeCommand('mod-language', request);
+            if (!info || !info.success) throw new Error(info?.error || 'Lecture des langues impossible.');
+            const langs = info.languages;
+            if (!langs.length) { window.showToast('Aucun fichier de langue .ff ou .xpak dans ce contenu.', 'info'); return; }
+            const labels = {en:'English',fr:'Français',ja:'Japanese',tc:'Traditional Chinese',sc:'Simplified Chinese',es:'Spanish',ge:'German',it:'Italian',po:'Portuguese',ru:'Russian',bp:'Polish',ea:'English Arabic'};
+            const options = codes => codes.map(c => `<option value="${c}">${labels[c]}</option>`).join('');
+            const choice = await window.showMessageBox('Compatibilité de langue',
+                `Dossier : ${escapeHtml(info.path)}<br><br>Ferme BO3 avant de continuer.<br>Langue source : <select id="warlink-lang-from">${options(langs)}</select><br>Langue du jeu : <select id="warlink-lang-to">${options(['fr','en',...Object.keys(labels).filter(c=>c!=='fr' && c!=='en')])}</select><br><br>Renomme les fichiers sans les écraser. Ne traduit pas les textes. Pour revenir en arrière, refais la conversion dans le sens inverse.`, ['Annuler','Appliquer']);
+            if (choice !== 1) return;
+            const from = document.getElementById('warlink-lang-from').value;
+            const to = document.getElementById('warlink-lang-to').value;
+            const result = await window.executeCommand('mod-language', {...request, action:'change', from, to});
+            if (!result?.success) throw new Error(result?.error || 'Conversion impossible.');
+            window.showToast(`${result.changed} fichier(s) renommé(s).`, 'success');
+        } catch(error) { reportError(error); }
+    }
 
     async function uninstallMod(gameId, id) {
         const mod = (getState(gameId).installed || []).find(m => m.id === id);

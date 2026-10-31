@@ -762,7 +762,7 @@ namespace ipc
 
             if (!mods::try_claim_install(*config))
             {
-                this->send_workshop_result(request_id, false, "Another install is already running in CB Launcher.");
+                this->send_workshop_result(request_id, false, "Another install is already running in WARLINK.");
                 return;
             }
 

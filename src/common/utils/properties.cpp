@@ -61,7 +61,7 @@ namespace utils::properties
 
     std::filesystem::path get_portable_root()
     {
-        static auto portable = nt::library{}.get_folder() / "cbservers";
+        static auto portable = nt::library{}.get_folder() / "warlink";
         return portable;
     }
 
@@ -89,9 +89,9 @@ namespace utils::properties
         });
 
 #ifdef DEBUG
-        static auto appdata = std::filesystem::path(path) / "cbservers_debug";
+        static auto appdata = std::filesystem::path(path) / "warlink_debug";
 #else
-        static auto appdata = std::filesystem::path(path) / "cbservers";
+        static auto appdata = std::filesystem::path(path) / "warlink";
 #endif
         return appdata;
     }

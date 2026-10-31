@@ -244,7 +244,7 @@
                 joinedYourGroup: '{{name}} joined your {{game}} group.'
             },
             app: {
-                title: 'CB Servers Launcher'
+                title: 'WARLINK'
             },
             window: {
                 minimize: 'Minimize',
@@ -313,7 +313,7 @@
                 discordLinked: 'Discord linked',
                 discordFriend: 'Discord friend',
                 linking: 'Connecting to Discord...',
-                inLauncher: 'In CB Launcher',
+                inLauncher: 'In WARLINK',
                 degraded: 'Friends service unreachable - showing friends currently in the launcher only.',
                 invite: 'Invite',
                 join: 'Join',
@@ -374,7 +374,7 @@
                 inServers: 'in servers',
                 inLauncher: 'in launcher',
                 inServersHint: 'Players in public servers right now',
-                inLauncherHint: 'People running this game from the CB launcher right now',
+                inLauncherHint: 'People running this game from the WARLINK right now',
                 confirm: 'Confirm',
                 save: 'Save',
                 play: 'Play',
@@ -419,13 +419,13 @@
                 heroNext: 'Next',
                 notInstalled: 'Not Installed',
                 showInstalled: 'Show installed',
-                welcomeTitle: 'Welcome to CB Launcher',
-                welcomeBody: 'Welcome to CB Servers Launcher! Your one-stop launcher for Call of Duty community clients. Install, update, and play supported clients all from one place. Head to the <strong>Library</strong> tab to browse every available client and start playing. Need a hand? Click the <strong>?</strong> next to <strong>Settings</strong> at the bottom of the sidebar or check out our <a href="https://docs.cbservers.xyz/launcher" target="_blank">docs</a>.',
+                welcomeTitle: 'Welcome to WARLINK',
+                welcomeBody: 'Welcome to WARLINK! Your one-stop launcher for Call of Duty community clients. Install, update, and play supported clients all from one place. Head to the <strong>Library</strong> tab to browse every available client and start playing. Need a hand? Click the <strong>?</strong> next to <strong>Settings</strong> at the bottom of the sidebar or check out our <a href="https://docs.cbservers.xyz/launcher" target="_blank">docs</a>.',
                 disclaimer: 'This launcher is not affiliated with or endorsed by IW4x, Plutonium, AlterWare, Aurora, HorizonMW, CoD4x Project, IW3x, IW3SP-Mod, CoDExtended, T6SP-Mod, H2-Mod, or Project BO4. Please do not contact the original client maintainers with support requests regarding this launcher.'
             },
             library: {
                 title: 'Library',
-                subtitle: 'Call of Duty clients available through CB Launcher.',
+                subtitle: 'Call of Duty clients available through WARLINK.',
                 comingSoonHint: 'Client support is on the way.',
                 filterAll: 'All',
                 filterInstalled: 'Installed',
@@ -473,8 +473,8 @@
                     reinstallAllTitle: 'Reinstall all redistributables?',
                     reinstallAllBody: 'This reinstalls all {{total}} redistributable packages, including ones already installed. Windows will show a single administrator permission (UAC) prompt. Continue?'
                 },
-                noteBody: 'This launcher is not affiliated with IW4x, Plutonium, AlterWare, Aurora, HorizonMW, CoD4x Project, IW3x, IW3SP-Mod, CoDExtended, T6SP-Mod, H2-Mod, or Project BO4. Please use CB Servers support channels for this launcher and its forks.',
-                github: 'CB Servers GitHub'
+                noteBody: 'This launcher is not affiliated with IW4x, Plutonium, AlterWare, Aurora, HorizonMW, CoD4x Project, IW3x, IW3SP-Mod, CoDExtended, T6SP-Mod, H2-Mod, or Project BO4. WARLINK is developed and maintained by STARZISMIK.',
+                github: 'Original source (GPL)' 
             },
             installer: {
                 missingRedistTitle: 'Required components missing',
@@ -557,7 +557,7 @@
                 globalPlayerName: 'Global in-game name',
                 globalPlayerNameBody: 'Used as your in-game name in any game that supports custom names. Can be overridden per-game.',
                 discord: 'Discord account',
-                discordBody: 'Link your Discord account to use the friends list. While linked, Discord friends see you as playing CB Launcher.',
+                discordBody: 'Link your Discord account to use the friends list. While linked, Discord friends see you as playing WARLINK.',
                 discordLink: 'Link',
                 discordUnlink: 'Unlink',
                 discordLinkedAs: 'Linked as {{name}}',
@@ -696,7 +696,7 @@
                 featuredOfficial: 'Official',
                 featuredOfficialHint: 'Run by the CB Servers team',
                 featuredContributor: 'Contributor',
-                featuredContributorHint: 'Run by a CB Launcher contributor',
+                featuredContributorHint: 'Run by a WARLINK contributor',
                 featuredEvent: 'Event',
                 featuredEventHint: 'A limited-time event server',
                 featuredDiscord: 'Join their Discord',
@@ -1004,24 +1004,24 @@
                 },
                 'boiii': {
                     description: 'Call of Duty: Black Ops 3 enhanced with BOIII modifications. Experience the full campaign, multiplayer, and zombies modes with improved stability and additional features.',
-                    credits: 'This is a <a href="https://github.com/CBServers/boiii" target="_blank">fork</a> of the original BOIII/T7x Client developed by <a href="https://github.com/momo5502" target="_blank">momo5502</a> and <a href="https://alterware.dev" target="_blank">AlterWare</a> with added CB patches.'
+                    credits: 'This is a <a href="https://github.com/CBServers/boiii" target="_blank">fork</a> of the original BOIII/T7x Client developed by <a href="https://github.com/momo5502" target="_blank">momo5502</a> and <a href="https://alterware.dev" target="_blank">AlterWare</a> with community patches.'
                 },
                 'iw6x': {
                     description: 'Call of Duty: Ghosts enhanced with IW6x modifications. Experience the campaign and multiplayer with improved stability and additional features.',
-                    credits: 'This is a <a href="https://github.com/CBServers/iw6-mod" target="_blank">fork</a> of the original IW6x/iw6-mod Client developed by <a href="https://alterware.dev" target="_blank">AlterWare</a> and <a href="https://xlabs.dev" target="_blank">X Labs</a> with added CB patches.'
+                    credits: 'This is a <a href="https://github.com/CBServers/iw6-mod" target="_blank">fork</a> of the original IW6x/iw6-mod Client developed by <a href="https://alterware.dev" target="_blank">AlterWare</a> and <a href="https://xlabs.dev" target="_blank">X Labs</a> with community patches.'
                 },
                 's1x': {
                     description: 'Call of Duty: Advanced Warfare enhanced with S1x modifications. Experience the futuristic warfare campaign and multiplayer with improved stability and additional features.',
-                    credits: 'This is a <a href="https://github.com/CBServers/s1-mod" target="_blank">fork</a> of the original S1x/s1-mod Client developed by <a href="https://alterware.dev" target="_blank">AlterWare</a> and <a href="https://xlabs.dev" target="_blank">X Labs</a> with added CB patches.'
+                    credits: 'This is a <a href="https://github.com/CBServers/s1-mod" target="_blank">fork</a> of the original S1x/s1-mod Client developed by <a href="https://alterware.dev" target="_blank">AlterWare</a> and <a href="https://xlabs.dev" target="_blank">X Labs</a> with community patches.'
                 },
                 'h1-mod': {
                     description: 'Call of Duty: Modern Warfare Remastered enhanced with H1-Mod features. Experience the classic campaign and multiplayer with improved stability and additional features.',
                     descriptionWarning: "If you have an NVIDIA RTX graphics card, keep the in-game Pre-Cache Shaders setting off. Enabling it is known to crash the game on RTX GPUs.",
-                    credits: 'This is a <a href="https://github.com/CBServers/h1-mod" target="_blank">fork</a> of the original H1-Mod Client developed by <a href="https://auroramod.dev" target="_blank">Aurora</a> with added CB patches.'
+                    credits: 'This is a <a href="https://github.com/CBServers/h1-mod" target="_blank">fork</a> of the original H1-Mod Client developed by <a href="https://auroramod.dev" target="_blank">Aurora</a> with community patches.'
                 },
                 'iw7-mod': {
                     description: 'Call of Duty: Infinite Warfare enhanced with IW7-Mod features. Experience the space warfare campaign, multiplayer and zombies with improved stability and additional features.',
-                    credits: 'This is a <a href="https://github.com/CBServers/iw7-mod" target="_blank">fork</a> of the original IW7-Mod Client developed by <a href="https://auroramod.dev" target="_blank">Aurora</a> with added CB patches.'
+                    credits: 'This is a <a href="https://github.com/CBServers/iw7-mod" target="_blank">fork</a> of the original IW7-Mod Client developed by <a href="https://auroramod.dev" target="_blank">Aurora</a> with community patches.'
                 },
                 'bo4': {
                     description: 'Black Ops 4 enhanced with Project BO4 Launcher. Includes online and offline modes for multiplayer and zombies, with improved stability and additional features.',
@@ -1034,13 +1034,13 @@
                 'hmw-mod': {
                     description: "HorizonMW is a community remaster of Modern Warfare 2 multiplayer, carrying maps, weapons and systems from both MWR and MW3 along with a few guns from Ghosts.",
                     descriptionWarning: "If you have an NVIDIA RTX graphics card, keep the in-game Pre-Cache Shaders setting off. Enabling it is known to crash the game on RTX GPUs.",
-                    credits: 'This is a <a href="https://github.com/CBServers/HorizonMW-Client" target="_blank">fork</a> of the original HMW-Mod Client developed by <a href="https://horizonmw.org/" target="_blank">HorizonMW</a> with added CB patches.'
+                    credits: 'This is a <a href="https://github.com/CBServers/HorizonMW-Client" target="_blank">fork</a> of the original HMW-Mod Client developed by <a href="https://horizonmw.org/" target="_blank">HorizonMW</a> with community patches.'
                 }
             }
         },
         fr: {
             app: {
-                title: 'CB Servers Launcher'
+                title: 'WARLINK'
             },
             window: {
                 minimize: 'Reduire',
@@ -1109,7 +1109,7 @@
                 discordLinked: 'Discord lie',
                 discordFriend: 'Ami Discord',
                 linking: 'Connexion a Discord...',
-                inLauncher: 'Dans CB Launcher',
+                inLauncher: 'Dans WARLINK',
                 degraded: 'Service amis injoignable - seuls les amis actuellement dans le launcher sont affiches.',
                 invite: 'Inviter',
                 join: 'Rejoindre',
@@ -1215,13 +1215,13 @@
                 heroNext: 'Suivant',
                 notInstalled: 'Non installes',
                 showInstalled: 'Voir les installes',
-                welcomeTitle: 'Bienvenue sur CB Launcher',
-                welcomeBody: 'Bienvenue sur CB Servers Launcher&nbsp;! Votre launcher tout-en-un pour les clients communautaires Call of Duty. Installez, mettez a jour et jouez aux clients pris en charge depuis un seul endroit. Rendez-vous dans l\'onglet <strong>Bibliotheque</strong> pour parcourir tous les clients disponibles et commencer a jouer. Besoin d\'aide&nbsp;? Cliquez sur le <strong>?</strong> a cote de <strong>Parametres</strong> en bas de la barre laterale ou consultez notre <a href="https://docs.cbservers.xyz/launcher" target="_blank">documentation</a>.',
+                welcomeTitle: 'Bienvenue sur WARLINK',
+                welcomeBody: 'Bienvenue sur WARLINK&nbsp;! Votre launcher tout-en-un pour les clients communautaires Call of Duty. Installez, mettez a jour et jouez aux clients pris en charge depuis un seul endroit. Rendez-vous dans l\'onglet <strong>Bibliotheque</strong> pour parcourir tous les clients disponibles et commencer a jouer. Besoin d\'aide&nbsp;? Cliquez sur le <strong>?</strong> a cote de <strong>Parametres</strong> en bas de la barre laterale ou consultez notre <a href="https://docs.cbservers.xyz/launcher" target="_blank">documentation</a>.',
                 disclaimer: 'Ce launcher n\'est ni affilie ni approuve par IW4x, Plutonium, AlterWare, Aurora, HorizonMW, CoD4x Project, IW3x, IW3SP-Mod, CoDExtended, T6SP-Mod, H2-Mod ou Project BO4. Merci de ne pas contacter les developpeurs des clients d\'origine pour des questions concernant ce launcher.'
             },
             library: {
                 title: 'Bibliotheque',
-                subtitle: 'Clients Call of Duty disponibles dans CB Launcher.',
+                subtitle: 'Clients Call of Duty disponibles dans WARLINK.',
                 comingSoonHint: "Le support du client est en cours d'arrivee.",
                 filterAll: 'Tous',
                 filterInstalled: 'Installes',
@@ -1269,8 +1269,8 @@
                     reinstallAllTitle: 'Reinstaller tous les redistribuables ?',
                     reinstallAllBody: 'Cela reinstalle les {{total}} paquets redistribuables, y compris ceux deja installes. Windows affichera une seule invite d\'autorisation administrateur (UAC). Continuer ?'
                 },
-                noteBody: "Ce launcher n'est pas affilie a IW4x, Plutonium, AlterWare, Aurora, HorizonMW, CoD4x Project, IW3x, IW3SP-Mod, CoDExtended, T6SP-Mod, H2-Mod ou Project BO4. Utilisez les canaux de support CB Servers pour ce launcher et ses forks.",
-                github: 'GitHub CB Servers'
+                noteBody: "Ce launcher n'est pas affilie a IW4x, Plutonium, AlterWare, Aurora, HorizonMW, CoD4x Project, IW3x, IW3SP-Mod, CoDExtended, T6SP-Mod, H2-Mod ou Project BO4. WARLINK est développé et maintenu par STARZISMIK.",
+                github: 'Code source d’origine (GPL)' 
             },
             installer: {
                 missingRedistTitle: 'Composants requis manquants',
@@ -1353,7 +1353,7 @@
                 globalPlayerName: 'Nom de joueur global',
                 globalPlayerNameBody: 'Utilise comme votre nom dans tout jeu qui prend en charge les noms personnalises. Peut etre remplace par jeu.',
                 discord: 'Compte Discord',
-                discordBody: 'Liez votre compte Discord pour utiliser la liste d\'amis. Une fois lie, vos amis Discord vous voient comme jouant a CB Launcher.',
+                discordBody: 'Liez votre compte Discord pour utiliser la liste d\'amis. Une fois lie, vos amis Discord vous voient comme jouant a WARLINK.',
                 discordLink: 'Lier',
                 discordUnlink: 'Delier',
                 discordLinkedAs: 'Lie en tant que {{name}}',
@@ -1492,7 +1492,7 @@
                 featuredOfficial: 'Officiel',
                 featuredOfficialHint: 'Gere par CB Servers',
                 featuredContributor: 'Contributeur',
-                featuredContributorHint: 'Gere par un contributeur du CB Launcher',
+                featuredContributorHint: 'Gere par un contributeur du WARLINK',
                 featuredEvent: 'Evenement',
                 featuredEventHint: 'Serveur evenement a duree limitee',
                 featuredDiscord: 'Rejoindre leur Discord',
@@ -1800,24 +1800,24 @@
                 },
                 'boiii': {
                     description: 'Call of Duty: Black Ops 3 ameliore avec les modifications BOIII. Profitez de la campagne complete, du multijoueur et des zombies avec une meilleure stabilite et des fonctionnalites supplementaires.',
-                    credits: 'Ceci est un <a href="https://github.com/CBServers/boiii" target="_blank">fork</a> du client BOIII/T7x original developpe par <a href="https://github.com/momo5502" target="_blank">momo5502</a> et <a href="https://alterware.dev" target="_blank">AlterWare</a> avec des correctifs CB.'
+                    credits: 'Ceci est un <a href="https://github.com/CBServers/boiii" target="_blank">fork</a> du client BOIII/T7x original developpe par <a href="https://github.com/momo5502" target="_blank">momo5502</a> et <a href="https://alterware.dev" target="_blank">AlterWare</a> avec des correctifs communautaires.'
                 },
                 'iw6x': {
                     description: 'Call of Duty: Ghosts ameliore avec les modifications IW6x. Profitez de la campagne et du multijoueur avec une meilleure stabilite et des fonctionnalites supplementaires.',
-                    credits: 'Ceci est un <a href="https://github.com/CBServers/iw6-mod" target="_blank">fork</a> du client IW6x/iw6-mod original developpe par <a href="https://alterware.dev" target="_blank">AlterWare</a> et <a href="https://xlabs.dev" target="_blank">X Labs</a> avec des correctifs CB.'
+                    credits: 'Ceci est un <a href="https://github.com/CBServers/iw6-mod" target="_blank">fork</a> du client IW6x/iw6-mod original developpe par <a href="https://alterware.dev" target="_blank">AlterWare</a> et <a href="https://xlabs.dev" target="_blank">X Labs</a> avec des correctifs communautaires.'
                 },
                 's1x': {
                     description: 'Call of Duty: Advanced Warfare ameliore avec les modifications S1x. Profitez de la campagne de guerre futuriste et du multijoueur avec une meilleure stabilite et des fonctionnalites supplementaires.',
-                    credits: 'Ceci est un <a href="https://github.com/CBServers/s1-mod" target="_blank">fork</a> du client S1x/s1-mod original developpe par <a href="https://alterware.dev" target="_blank">AlterWare</a> et <a href="https://xlabs.dev" target="_blank">X Labs</a> avec des correctifs CB.'
+                    credits: 'Ceci est un <a href="https://github.com/CBServers/s1-mod" target="_blank">fork</a> du client S1x/s1-mod original developpe par <a href="https://alterware.dev" target="_blank">AlterWare</a> et <a href="https://xlabs.dev" target="_blank">X Labs</a> avec des correctifs communautaires.'
                 },
                 'h1-mod': {
                     description: 'Call of Duty: Modern Warfare Remastered ameliore avec les fonctionnalites H1-Mod. Profitez de la campagne classique et du multijoueur avec une meilleure stabilite et des fonctionnalites supplementaires.',
                     descriptionWarning: "Si vous avez une carte graphique NVIDIA RTX, laissez l'option Pre-Cache Shaders desactivee dans le jeu. L'activer fait planter le jeu sur les GPU RTX.",
-                    credits: 'Ceci est un <a href="https://github.com/CBServers/h1-mod" target="_blank">fork</a> du client H1-Mod original developpe par <a href="https://auroramod.dev" target="_blank">Aurora</a> avec des correctifs CB.'
+                    credits: 'Ceci est un <a href="https://github.com/CBServers/h1-mod" target="_blank">fork</a> du client H1-Mod original developpe par <a href="https://auroramod.dev" target="_blank">Aurora</a> avec des correctifs communautaires.'
                 },
                 'iw7-mod': {
                     description: 'Call of Duty: Infinite Warfare ameliore avec les fonctionnalites IW7-Mod. Profitez de la campagne de guerre spatiale, du multijoueur et des zombies avec une meilleure stabilite et des fonctionnalites supplementaires.',
-                    credits: 'Ceci est un <a href="https://github.com/CBServers/iw7-mod" target="_blank">fork</a> du client IW7-Mod original developpe par <a href="https://auroramod.dev" target="_blank">Aurora</a> avec des correctifs CB.'
+                    credits: 'Ceci est un <a href="https://github.com/CBServers/iw7-mod" target="_blank">fork</a> du client IW7-Mod original developpe par <a href="https://auroramod.dev" target="_blank">Aurora</a> avec des correctifs communautaires.'
                 },
                 'bo4': {
                     description: 'Black Ops 4 ameliore avec Project BO4 Launcher. Inclut les modes en ligne et hors ligne pour le multijoueur et les zombies, avec une meilleure stabilite et des fonctionnalites supplementaires.',
@@ -1830,13 +1830,13 @@
                 'hmw-mod': {
                     description: "HorizonMW est un remaster communautaire du multijoueur de Modern Warfare 2, avec des cartes, des armes et des systemes de MWR et MW3 ainsi que quelques armes de Ghosts.",
                     descriptionWarning: "Si vous avez une carte graphique NVIDIA RTX, laissez l'option Pre-Cache Shaders desactivee dans le jeu. L'activer fait planter le jeu sur les GPU RTX.",
-                    credits: 'Ceci est un <a href="https://github.com/CBServers/HorizonMW-Client" target="_blank">fork</a> du client HMW-Mod original developpe par <a href="https://horizonmw.org/" target="_blank">HorizonMW</a> avec des correctifs CB.'
+                    credits: 'Ceci est un <a href="https://github.com/CBServers/HorizonMW-Client" target="_blank">fork</a> du client HMW-Mod original developpe par <a href="https://horizonmw.org/" target="_blank">HorizonMW</a> avec des correctifs communautaires.'
                 }
             }
         },
         es: {
             app: {
-                title: 'CB Servers Launcher'
+                title: 'WARLINK'
             },
             window: {
                 minimize: 'Minimizar',
@@ -1905,7 +1905,7 @@
                 discordLinked: 'Discord vinculado',
                 discordFriend: 'Amigo de Discord',
                 linking: 'Conectando con Discord...',
-                inLauncher: 'En CB Launcher',
+                inLauncher: 'En WARLINK',
                 degraded: 'Servicio de amigos no disponible - solo se muestran los amigos que estan ahora en el launcher.',
                 invite: 'Invitar',
                 join: 'Unirse',
@@ -2011,13 +2011,13 @@
                 heroNext: 'Siguiente',
                 notInstalled: 'No instalado',
                 showInstalled: 'Mostrar instalados',
-                welcomeTitle: 'Bienvenido a CB Launcher',
-                welcomeBody: 'Bienvenido a CB Servers Launcher! Tu launcher todo-en-uno para los clientes comunitarios de Call of Duty. Instala, actualiza y juega a los clientes compatibles desde un solo lugar. Ve a la pestana <strong>Biblioteca</strong> para explorar todos los clientes disponibles y empezar a jugar. Necesitas ayuda? Haz clic en el <strong>?</strong> junto a <strong>Ajustes</strong> en la parte inferior de la barra lateral o consulta nuestra <a href="https://docs.cbservers.xyz/launcher" target="_blank">documentacion</a>.',
+                welcomeTitle: 'Bienvenido a WARLINK',
+                welcomeBody: 'Bienvenido a WARLINK! Tu launcher todo-en-uno para los clientes comunitarios de Call of Duty. Instala, actualiza y juega a los clientes compatibles desde un solo lugar. Ve a la pestana <strong>Biblioteca</strong> para explorar todos los clientes disponibles y empezar a jugar. Necesitas ayuda? Haz clic en el <strong>?</strong> junto a <strong>Ajustes</strong> en la parte inferior de la barra lateral o consulta nuestra <a href="https://docs.cbservers.xyz/launcher" target="_blank">documentacion</a>.',
                 disclaimer: 'Este launcher no esta afiliado ni respaldado por IW4x, Plutonium, AlterWare, Aurora, HorizonMW, CoD4x Project, IW3x, IW3SP-Mod, CoDExtended, T6SP-Mod, H2-Mod ni Project BO4. Por favor, no contactes a los desarrolladores originales de los clientes con consultas de soporte sobre este launcher.'
             },
             library: {
                 title: 'Biblioteca',
-                subtitle: 'Clientes de Call of Duty disponibles a traves de CB Launcher.',
+                subtitle: 'Clientes de Call of Duty disponibles a traves de WARLINK.',
                 comingSoonHint: 'El soporte del cliente esta en camino.',
                 filterAll: 'Todos',
                 filterInstalled: 'Instalados',
@@ -2066,7 +2066,7 @@
                     reinstallAllBody: 'Esto reinstala los {{total}} paquetes redistribuibles, incluidos los ya instalados. Windows mostrara una sola ventana de permiso de administrador (UAC). ¿Continuar?'
                 },
                 noteBody: 'Este launcher no esta afiliado a IW4x, Plutonium, AlterWare, Aurora, HorizonMW, CoD4x Project, IW3x, IW3SP-Mod, CoDExtended, T6SP-Mod, H2-Mod ni Project BO4. Por favor, usa los canales de soporte de CB Servers para este launcher y sus forks.',
-                github: 'GitHub de CB Servers'
+                github: 'Código de origen (GPL)'
             },
             installer: {
                 missingRedistTitle: 'Faltan componentes requeridos',
@@ -2149,7 +2149,7 @@
                 globalPlayerName: 'Nombre global en el juego',
                 globalPlayerNameBody: 'Se usa como tu nombre dentro de cualquier juego que admita nombres personalizados. Se puede sobrescribir por juego.',
                 discord: 'Cuenta de Discord',
-                discordBody: 'Vincula tu cuenta de Discord para usar la lista de amigos. Mientras este vinculada, tus amigos de Discord te veran jugando CB Launcher.',
+                discordBody: 'Vincula tu cuenta de Discord para usar la lista de amigos. Mientras este vinculada, tus amigos de Discord te veran jugando WARLINK.',
                 discordLink: 'Vincular',
                 discordUnlink: 'Desvincular',
                 discordLinkedAs: 'Vinculado como {{name}}',
@@ -2288,7 +2288,7 @@
                 featuredOfficial: 'Oficial',
                 featuredOfficialHint: 'Administrado por el equipo de CB Servers',
                 featuredContributor: 'Colaborador',
-                featuredContributorHint: 'Administrado por un colaborador del CB Launcher',
+                featuredContributorHint: 'Administrado por un colaborador del WARLINK',
                 featuredEvent: 'Evento',
                 featuredEventHint: 'Servidor de evento por tiempo limitado',
                 featuredDiscord: 'Unirse a su Discord',
@@ -2596,24 +2596,24 @@
                 },
                 'boiii': {
                     description: 'Call of Duty: Black Ops 3 mejorado con las modificaciones BOIII. Disfruta de la campana completa, el multijugador y el modo zombis con mayor estabilidad y funciones adicionales.',
-                    credits: 'Este es un <a href="https://github.com/CBServers/boiii" target="_blank">fork</a> del cliente original BOIII/T7x desarrollado por <a href="https://github.com/momo5502" target="_blank">momo5502</a> y <a href="https://alterware.dev" target="_blank">AlterWare</a> con parches CB anadidos.'
+                    credits: 'Este es un <a href="https://github.com/CBServers/boiii" target="_blank">fork</a> del cliente original BOIII/T7x desarrollado por <a href="https://github.com/momo5502" target="_blank">momo5502</a> y <a href="https://alterware.dev" target="_blank">AlterWare</a> con parches comunitarios.'
                 },
                 'iw6x': {
                     description: 'Call of Duty: Ghosts mejorado con las modificaciones IW6x. Disfruta de la campana y del multijugador con mayor estabilidad y funciones adicionales.',
-                    credits: 'Este es un <a href="https://github.com/CBServers/iw6-mod" target="_blank">fork</a> del cliente original IW6x/iw6-mod desarrollado por <a href="https://alterware.dev" target="_blank">AlterWare</a> y <a href="https://xlabs.dev" target="_blank">X Labs</a> con parches CB anadidos.'
+                    credits: 'Este es un <a href="https://github.com/CBServers/iw6-mod" target="_blank">fork</a> del cliente original IW6x/iw6-mod desarrollado por <a href="https://alterware.dev" target="_blank">AlterWare</a> y <a href="https://xlabs.dev" target="_blank">X Labs</a> con parches comunitarios.'
                 },
                 's1x': {
                     description: 'Call of Duty: Advanced Warfare mejorado con las modificaciones S1x. Disfruta de la campana de guerra futurista y del multijugador con mayor estabilidad y funciones adicionales.',
-                    credits: 'Este es un <a href="https://github.com/CBServers/s1-mod" target="_blank">fork</a> del cliente original S1x/s1-mod desarrollado por <a href="https://alterware.dev" target="_blank">AlterWare</a> y <a href="https://xlabs.dev" target="_blank">X Labs</a> con parches CB anadidos.'
+                    credits: 'Este es un <a href="https://github.com/CBServers/s1-mod" target="_blank">fork</a> del cliente original S1x/s1-mod desarrollado por <a href="https://alterware.dev" target="_blank">AlterWare</a> y <a href="https://xlabs.dev" target="_blank">X Labs</a> con parches comunitarios.'
                 },
                 'h1-mod': {
                     description: 'Call of Duty: Modern Warfare Remastered mejorado con las funciones de H1-Mod. Disfruta de la campana clasica y del multijugador con mayor estabilidad y funciones adicionales.',
                     descriptionWarning: "Si tienes una tarjeta grafica NVIDIA RTX, manten desactivada la opcion Pre-Cache Shaders del juego. Activarla hace que el juego se cierre en GPUs RTX.",
-                    credits: 'Este es un <a href="https://github.com/CBServers/h1-mod" target="_blank">fork</a> del cliente original H1-Mod desarrollado por <a href="https://auroramod.dev" target="_blank">Aurora</a> con parches CB anadidos.'
+                    credits: 'Este es un <a href="https://github.com/CBServers/h1-mod" target="_blank">fork</a> del cliente original H1-Mod desarrollado por <a href="https://auroramod.dev" target="_blank">Aurora</a> con parches comunitarios.'
                 },
                 'iw7-mod': {
                     description: 'Call of Duty: Infinite Warfare mejorado con las funciones de IW7-Mod. Disfruta de la campana de guerra espacial, el multijugador y los zombis con mayor estabilidad y funciones adicionales.',
-                    credits: 'Este es un <a href="https://github.com/CBServers/iw7-mod" target="_blank">fork</a> del cliente original IW7-Mod desarrollado por <a href="https://auroramod.dev" target="_blank">Aurora</a> con parches CB anadidos.'
+                    credits: 'Este es un <a href="https://github.com/CBServers/iw7-mod" target="_blank">fork</a> del cliente original IW7-Mod desarrollado por <a href="https://auroramod.dev" target="_blank">Aurora</a> con parches comunitarios.'
                 },
                 'bo4': {
                     description: 'Black Ops 4 mejorado con Project BO4 Launcher. Incluye modos en linea y sin conexion para multijugador y zombis, con mayor estabilidad y funciones adicionales.',
@@ -2626,13 +2626,13 @@
                 'hmw-mod': {
                     description: "HorizonMW es una remasterizacion comunitaria del multijugador de Modern Warfare 2, con mapas, armas y sistemas de MWR y MW3 junto con algunas armas de Ghosts.",
                     descriptionWarning: "Si tienes una tarjeta grafica NVIDIA RTX, manten desactivada la opcion Pre-Cache Shaders del juego. Activarla hace que el juego se cierre en GPUs RTX.",
-                    credits: 'Este es un <a href="https://github.com/CBServers/HorizonMW-Client" target="_blank">fork</a> del cliente original HMW-Mod desarrollado por <a href="https://horizonmw.org/" target="_blank">HorizonMW</a> con parches CB anadidos.'
+                    credits: 'Este es un <a href="https://github.com/CBServers/HorizonMW-Client" target="_blank">fork</a> del cliente original HMW-Mod desarrollado por <a href="https://horizonmw.org/" target="_blank">HorizonMW</a> con parches comunitarios.'
                 }
             }
         },
         ru: {
             app: {
-                title: 'CB Servers Launcher'
+                title: 'WARLINK'
             },
             window: {
                 minimize: 'Свернуть',
@@ -2701,7 +2701,7 @@
                 discordLinked: 'Discord привязан',
                 discordFriend: 'Друг в Discord',
                 linking: 'Подключение к Discord...',
-                inLauncher: 'В CB Launcher',
+                inLauncher: 'В WARLINK',
                 degraded: 'Служба друзей недоступна — отображаются только друзья, которые сейчас в лаунчере.',
                 invite: 'Пригласить',
                 join: 'Присоединиться',
@@ -2806,13 +2806,13 @@
                 heroNext: 'Следующий',
                 notInstalled: 'Не установлено',
                 showInstalled: 'Показать установленные',
-                welcomeTitle: 'Добро пожаловать в CB Launcher',
-                welcomeBody: 'Добро пожаловать в CB Servers Launcher! Ваш универсальный лаунчер для клиентов сообщества Call of Duty. Устанавливайте, обновляйте и играйте в поддерживаемые клиенты из одного места. Перейдите на вкладку <strong>Библиотека</strong>, чтобы просмотреть все доступные клиенты и начать играть. Нужна помощь? Нажмите <strong>?</strong> рядом с пунктом <strong>Настройки</strong> внизу боковой панели или ознакомьтесь с нашей <a href="https://docs.cbservers.xyz/launcher" target="_blank">документацией</a>.',
+                welcomeTitle: 'Добро пожаловать в WARLINK',
+                welcomeBody: 'Добро пожаловать в WARLINK! Ваш универсальный лаунчер для клиентов сообщества Call of Duty. Устанавливайте, обновляйте и играйте в поддерживаемые клиенты из одного места. Перейдите на вкладку <strong>Библиотека</strong>, чтобы просмотреть все доступные клиенты и начать играть. Нужна помощь? Нажмите <strong>?</strong> рядом с пунктом <strong>Настройки</strong> внизу боковой панели или ознакомьтесь с нашей <a href="https://docs.cbservers.xyz/launcher" target="_blank">документацией</a>.',
                 disclaimer: 'Этот лаунчер не связан и не одобрен IW4x, Plutonium, AlterWare, Aurora, HorizonMW, CoD4x Project, IW3x, IW3SP-Mod, CoDExtended, T6SP-Mod, H2-Mod или Project BO4. Пожалуйста, не обращайтесь к разработчикам оригинальных клиентов с вопросами поддержки по этому лаунчеру.'
             },
             library: {
                 title: 'Библиотека',
-                subtitle: 'Клиенты Call of Duty, доступные через CB Launcher.',
+                subtitle: 'Клиенты Call of Duty, доступные через WARLINK.',
                 comingSoonHint: 'Поддержка клиента в разработке.',
                 filterAll: 'Все',
                 filterInstalled: 'Установленные',
@@ -2861,7 +2861,7 @@
                     reinstallAllBody: 'Это переустановит все {{total}} пакетов распространяемых компонентов, включая уже установленные. Windows покажет один запрос разрешения администратора (UAC). Продолжить?'
                 },
                 noteBody: 'Этот лаунчер не связан с IW4x, Plutonium, AlterWare, Aurora, HorizonMW, CoD4x Project, IW3x, IW3SP-Mod, CoDExtended, T6SP-Mod, H2-Mod или Project BO4. Пожалуйста, используйте каналы поддержки CB Servers для этого лаунчера и его форков.',
-                github: 'CB Servers GitHub'
+                github: 'Original source (GPL)' 
             },
             installer: {
                 missingRedistTitle: 'Отсутствуют необходимые компоненты',
@@ -2944,7 +2944,7 @@
                 globalPlayerName: 'Глобальное имя в игре',
                 globalPlayerNameBody: 'Используется как ваше имя в игре для всех игр, поддерживающих пользовательские имена. Может быть переопределено для каждой игры.',
                 discord: 'Аккаунт Discord',
-                discordBody: 'Привяжите ваш аккаунт Discord для использования списка друзей. Пока привязано, друзья в Discord видят вас играющим в CB Launcher.',
+                discordBody: 'Привяжите ваш аккаунт Discord для использования списка друзей. Пока привязано, друзья в Discord видят вас играющим в WARLINK.',
                 discordLink: 'Привязать',
                 discordUnlink: 'Отвязать',
                 discordLinkedAs: 'Привязан как {{name}}',
@@ -3083,7 +3083,7 @@
                 featuredOfficial: 'Официальный',
                 featuredOfficialHint: 'Сервер команды CB Servers',
                 featuredContributor: 'Участник',
-                featuredContributorHint: 'Сервер участника разработки CB Launcher',
+                featuredContributorHint: 'Сервер участника разработки WARLINK',
                 featuredEvent: 'Событие',
                 featuredEventHint: 'Сервер временного события',
                 featuredDiscord: 'Присоединиться к их Discord',

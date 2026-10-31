@@ -8,6 +8,10 @@
 #include <utils/string.hpp>
 #include <unordered_set>
 #include <version.hpp>
+#include <utils/flags.hpp>
+#include <utils/com.hpp>
+#include <rapidjson/prettywriter.h>
+#include <rapidjson/stringbuffer.h>
 
 #define CLIENT_UPDATE_SERVER "https://github.com/CBServers/updater/raw/main/updater/"
 
@@ -1125,6 +1129,135 @@ namespace game_config
         }
 
         return candidates.front();
+    }
+
+    void import_cb_library()
+    {
+        std::vector<std::filesystem::path> roots;
+        if (const auto custom = utils::flags::get_flag_value("cb-library-root"))
+        {
+            roots.emplace_back(utils::string::utf8_to_path(*custom));
+        }
+        else
+        {
+            roots.emplace_back(utils::properties::get_appdata_folder_path("cbservers"));
+            roots.emplace_back(utils::nt::library{}.get_folder() / "cbservers");
+            const auto desktop = utils::com::get_desktop_path();
+            if (!desktop.empty()) roots.emplace_back(desktop / "cbservers");
+        }
+
+        const auto destination = utils::properties::get_appdata_path();
+        for (const auto& root : roots)
+        {
+            std::string data;
+            if (!utils::io::read_file(root / "user" / "properties.json", &data)) continue;
+            rapidjson::Document source;
+            if (source.Parse(data.data(), data.size()).HasParseError() || !source.IsObject()) continue;
+
+            const auto read = [&source](const std::string& key) -> std::optional<std::string>
+            {
+                const auto it = source.FindMember(key.c_str());
+                if (it == source.MemberEnd() || !it->value.IsString()) return {};
+                return std::string(it->value.GetString(), it->value.GetStringLength());
+            };
+
+            for (const auto& [key, unused] : game_configs_)
+            {
+                const auto config = get_game_config(key);
+                if (!config) continue;
+                const auto path_key = config->make_property_key(property_keys::INSTALL);
+                const auto imported = read(path_key);
+                if (!imported || imported->empty()) continue;
+                const auto install = utils::string::utf8_to_path(*imported);
+                if (!validate_game_path(key, install)) continue;
+
+                // A different WARLINK path (including an explicit reset) takes precedence.
+                const auto local = utils::properties::load(path_key);
+                if (local && (local->empty() || utils::string::utf8_to_path(*local) != install)) continue;
+
+                std::vector<std::string> suffixes{
+                    property_keys::INSTALL, property_keys::IS_INSTALLED, property_keys::IS_STEAM_INSTALL,
+                    property_keys::LAUNCH_OPTIONS, property_keys::PLAYER_NAME_OVERRIDE, property_keys::GAME_MODE,
+                    property_keys::SKIP_INTRO_CINEMATIC, property_keys::LAUNCH_ADMIN, property_keys::PLUTONIUM_LAN,
+                    property_keys::CLIENT_CHANNEL, property_keys::DETECTED_COMPONENTS,
+                    property_keys::DETECTED_COMPONENTS_STAMP, property_keys::SELECTED_COMPONENTS,
+                    property_keys::KNOWN_COMPONENTS, property_keys::DISABLE_CB_EXTENSION,
+                    property_keys::CUSTOM_RESOLUTION_ENABLED, property_keys::CUSTOM_RESOLUTION_WIDTH,
+                    property_keys::CUSTOM_RESOLUTION_HEIGHT
+                };
+                for (const auto& [mode, args] : config->mode_arguments)
+                    suffixes.emplace_back(std::string(property_keys::SELECTED_CLIENT_PREFIX) + mode);
+                for (const auto& flag : config->launch_flags)
+                    suffixes.emplace_back(config->launch_flag_property(flag));
+                for (const auto& suffix : suffixes)
+                {
+                    const auto property = config->make_property_key(suffix);
+                    if (utils::properties::load(property)) continue;
+                    if (const auto value = read(property)) utils::properties::store(property, *value);
+                }
+                // CB may retain a valid discovered Steam path without writing this flag.
+                // Explicit false/reset values in either launcher remain authoritative.
+                if (!config->get(property_keys::IS_INSTALLED)) config->set_installed(true);
+            }
+
+            // Cache manifests/private client files only. No UI, account tokens or social identities.
+            for (const auto* folder : {"manifest", "clients"})
+            {
+                std::error_code ec;
+                const auto from = root / folder;
+                if (!std::filesystem::is_directory(from, ec)) continue;
+                std::filesystem::recursive_directory_iterator it(from,
+                    std::filesystem::directory_options::skip_permission_denied, ec), end;
+                for (; !ec && it != end; it.increment(ec))
+                {
+                    if (it->is_symlink(ec) || !it->is_regular_file(ec)) continue;
+                    const auto relative = it->path().lexically_relative(from);
+                    const auto target = destination / folder / relative;
+                    if (std::filesystem::exists(target, ec)) continue;
+                    std::filesystem::create_directories(target.parent_path(), ec);
+                    if (ec) { ec.clear(); continue; }
+                    std::filesystem::copy_file(it->path(), target, std::filesystem::copy_options::skip_existing, ec);
+                    ec.clear();
+                }
+            }
+        }
+    }
+
+    int check_library()
+    {
+        import_cb_library();
+        rapidjson::Document report;
+        report.SetArray();
+        auto& allocator = report.GetAllocator();
+        for (const auto& [key, unused] : game_configs_)
+        {
+            const auto config = get_game_config(key);
+            if (!config || !config->is_installed()) continue;
+            const auto install = config->get_install_path();
+            rapidjson::Value item(rapidjson::kObjectType);
+            item.AddMember("game", rapidjson::Value(key, allocator), allocator);
+            const auto path = install ? utils::string::path_to_utf8(*install) : std::string{};
+            item.AddMember("path", rapidjson::Value(path, allocator), allocator);
+            item.AddMember("valid", install && validate_game_path(key, *install), allocator);
+            item.AddMember("manifest", utils::io::file_exists(utils::properties::get_appdata_path() / config->manifest_path), allocator);
+            rapidjson::Value modes(rapidjson::kObjectType);
+            for (const auto& [mode, args] : config->mode_arguments)
+            {
+                const auto pluto = !config->plutonium_game_names.empty() && utils::io::file_exists(
+                    utils::properties::get_appdata_folder_path("Plutonium") / "bin" / "plutonium-bootstrapper-win32.exe");
+                const auto exists = pluto || (install && utils::io::file_exists(*install / get_exe_for_mode(key, mode)));
+                modes.AddMember(rapidjson::Value(mode, allocator), rapidjson::Value(exists), allocator);
+            }
+            if (config->mode_arguments.empty())
+                modes.AddMember("default", install && utils::io::file_exists(*install / config->exe_name), allocator);
+            item.AddMember("executables", modes, allocator);
+            report.PushBack(item, allocator);
+        }
+        rapidjson::StringBuffer buffer;
+        rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+        report.Accept(writer);
+        return utils::io::write_file(utils::properties::get_appdata_path() / "library-check.json",
+            std::string(buffer.GetString(), buffer.GetSize())) ? 0 : 1;
     }
 
     void seed_legacy_client_selections()

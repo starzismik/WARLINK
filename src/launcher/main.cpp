@@ -1,6 +1,9 @@
 #include "std_include.hpp"
 #include "cef/cef_ui.hpp"
 #include "commands/commands.hpp"
+#include "commands/hmw_host.hpp"
+#include "mods/mod_store.hpp"
+#include "warlink_product.hpp"
 #include "deep_link.hpp"
 #include "discord/avatar_cache.hpp"
 #include "discord/discord_service.hpp"
@@ -15,6 +18,7 @@
 #include "uri_scheme.hpp"
 
 #include <utils/flags.hpp>
+#include <utils/string.hpp>
 #include <utils/named_mutex.hpp>
 #include <utils/properties.hpp>
 #include <utils/property_keys.hpp>
@@ -136,7 +140,7 @@ namespace
 
     bool try_become_singleton()
     {
-        static utils::named_mutex mutex{"cb-launcher"};
+        static utils::named_mutex mutex{"warlink"};
         return mutex.try_lock(3s);
     }
 
@@ -294,7 +298,7 @@ namespace
         }
 
         // First run, exe moved/renamed, or a link missing the AUMID — (re)write it in place.
-        if (utils::com::create_shortcut(launcher_path, shortcut_path, "Launch the CB Servers Launcher", {},
+        if (utils::com::create_shortcut(launcher_path, shortcut_path, "Launch the WARLINK", {},
                                         utils::notification::APP_USER_MODEL_ID))
         {
             utils::properties::store(created_key, "true");
@@ -313,21 +317,21 @@ namespace
             const auto desktop_path = utils::com::get_desktop_path();
             if (!desktop_path.empty())
             {
-                create_launcher_shortcut(launcher_path, desktop_path / "CB Servers Launcher.lnk",
+                create_launcher_shortcut(launcher_path, desktop_path / "WARLINK.lnk",
                                          property_keys::SHORTCUT_CREATED, deletion_policy::honor);
             }
 
-            // Same "CB Servers" Programs folder the game shortcuts use. Windows indexes this tree to
+            // Same "WARLINK" Programs folder the game shortcuts use. Windows indexes this tree to
             // map the AUMID back to the launcher, which is what lets its toasts appear at all.
             const auto programs = utils::com::get_start_menu_programs_path();
             if (!programs.empty())
             {
-                const auto sm_dir = programs / L"CB Servers";
+                const auto sm_dir = programs / L"WARLINK";
                 std::error_code ec;
                 std::filesystem::create_directories(sm_dir, ec);
                 if (!ec)
                 {
-                    create_launcher_shortcut(launcher_path, sm_dir / "CB Servers Launcher.lnk",
+                    create_launcher_shortcut(launcher_path, sm_dir / "WARLINK.lnk",
                                              property_keys::START_MENU_SHORTCUT_CREATED, deletion_policy::restore);
                 }
             }
@@ -386,6 +390,20 @@ int CALLBACK WinMain(const HINSTANCE instance, HINSTANCE, LPSTR, int)
             return social::run_dump();
         }
 
+        if (const auto output = utils::flags::get_flag_value("mods-list-check")) {
+            const auto config = game_config::get_game_config("bo3");
+            if (!config) return 1;
+            std::string report;
+            for (const auto& mod : mods::list_installed(*config)) {
+                const auto mod_directory = mods::mod_path(*config,mod.id);
+                report += mod.id + "\t" + mod.name + "\t" + (mod_directory ? utils::string::path_to_utf8(*mod_directory) : "") + "\n";
+            }
+            return utils::io::write_file(utils::string::utf8_to_path(*output), report) ? 0 : 1;
+        }
+        if (const auto output=utils::flags::get_flag_value("product-update-check")){auto status=warlink_product::update_status();rapidjson::StringBuffer buffer;rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);status.Accept(writer);return utils::io::write_file(utils::string::utf8_to_path(*output),buffer.GetString())?0:1;}
+        if (const auto request = utils::flags::get_flag_value("hmw-host-tool")) return hmw_host::run_tool(*request);
+        if (utils::flags::has_flag("library-selftest")) return game_config::check_library();
+
         enable_dpi_awareness();
 
         // A cbservers:// URL may have been passed on the command line (protocol launch).
@@ -399,7 +417,10 @@ int CALLBACK WinMain(const HINSTANCE instance, HINSTANCE, LPSTR, int)
             {
                 return 0;
             }
-            throw std::runtime_error{"CB Servers Launcher is already running"};
+            // Steam or a shortcut may reopen the launcher while HorizonMW starts.
+            // The existing launcher remains active; a duplicate must not interrupt the game.
+            if (!deep_link_url) return 0;
+            throw std::runtime_error{"Impossible de transmettre le lien à WARLINK déjà ouvert. Réessaie dans quelques secondes."};
         }
 #else
         AllocConsole();
@@ -410,6 +431,7 @@ int CALLBACK WinMain(const HINSTANCE instance, HINSTANCE, LPSTR, int)
 #endif
 
         remove_previous_data_root();
+        game_config::import_cb_library();
         game_config::seed_legacy_client_selections();
 
         // Persistent equivalents of -noupdate / -offline, settable from the Settings page.
@@ -436,7 +458,7 @@ int CALLBACK WinMain(const HINSTANCE instance, HINSTANCE, LPSTR, int)
                     "Could not reach the update server to check for launcher updates.\n\n"
                     "Would you like to start in offline mode? Updates, downloads and online features will be disabled.\n\n"
                     "If this is your first time running the launcher, it may fail to launch if you continue.",
-                    "CB Servers Launcher", MB_ICONWARNING | MB_YESNO);
+                    "WARLINK", MB_ICONWARNING | MB_YESNO);
 
                 if (choice != IDYES)
                 {

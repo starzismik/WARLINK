@@ -200,6 +200,9 @@ namespace game_config
     bool is_store_routed(const game_config_t& config);
     // One-shot at startup: existing CoD4 installs keep CoD4x for MP; fresh setups get the default.
     void seed_legacy_client_selections();
+    // Import valid CB installations into WARLINK without changing CB's files/settings.
+    void import_cb_library();
+    int check_library();
 
     // Function declarations
     std::optional<game_config_t> get_game_config(const std::string& game);

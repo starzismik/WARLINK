@@ -8783,3 +8783,61 @@ html:not([data-color-uninstalled]) .library-card:not(.is-installed):not(.is-comi
     color: var(--accent);
     font-size: 12px;
 }
+
+html .title-bar .title-text {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 12px;
+    color: var(--accent);
+    font-size: 12px;
+}
+html .title-bar .title-text::before { display: none; }
+.title-author {
+    color: #8A8A9A;
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: .4px;
+    text-transform: none;
+}
+
+
+/* STARZISMIK inherits the tactical layout; other theme palettes stay original. */
+html:not([data-theme])[data-accent="starzismik"] {
+    --bg-base: #141618;
+    --bg-deep: #0D0F11;
+    --bg-gradient: var(--bg-base);
+    --surface: rgba(255,255,255,.045);
+    --surface-hi: rgba(255,255,255,.08);
+    --surface-lo: rgba(255,255,255,.025);
+    --surface-popup: rgba(22,25,28,.98);
+    --border: rgba(220,225,230,.10);
+    --border-hi: rgba(220,225,230,.18);
+    --text: #E8ECEF;
+    --text-bright: #F5F7F8;
+    --text-muted: #979FA7;
+    --text-dim: #626A72;
+    --accent: #69D875;
+    --accent-contrast: #0C190F;
+    --accent-soft: rgba(105,216,117,.22);
+    --accent-glow: rgba(105,216,117,.38);
+    --accent-deep: #42AB55;
+    --accent-grad: linear-gradient(135deg, #80E38A 0%, #50C667 100%);
+    --play: var(--accent);
+    --play-glow: rgba(105,216,117,.36);
+    --shadow-glow: 0 0 24px rgba(105,216,117,.13);
+    --nav-active-bg: linear-gradient(135deg, rgba(105,216,117,.16), rgba(105,216,117,.05));
+    --nav-active-border: rgba(105,216,117,.40);
+    --chip-active-bg: rgba(105,216,117,.14);
+    --chip-active-border: rgba(105,216,117,.50);
+    --focus-border: rgba(105,216,117,.55);
+    --card-hover-border: rgba(105,216,117,.45);
+    --hero-tint: rgba(105,216,117,.06);
+    --interactive-hover-border: rgba(105,216,117,.35);
+    --link-hover: #98E8A1;
+    --title-border: rgba(220,225,230,.07);
+    --checkbox-mark: #0C190F;
+}
+html:not([data-theme])[data-accent="starzismik"] ::selection {
+    background: rgba(105,216,117,.55);
+    color: #fff;
+}

@@ -15,6 +15,8 @@
 #include "mod_commands.hpp"
 #include "server_commands.hpp"
 #include "social_commands.hpp"
+#include "hmw_host.hpp"
+#include "warlink_product.hpp"
 
 namespace commands
 {
@@ -117,5 +119,7 @@ namespace commands
         mod_commands::register_commands(cef_ui, ctx);
         server_commands::register_commands(cef_ui, ctx);
         social_commands::register_commands(cef_ui, ctx);
+        hmw_host::register_commands(cef_ui);
+        warlink_product::register_commands(cef_ui);
     }
 }

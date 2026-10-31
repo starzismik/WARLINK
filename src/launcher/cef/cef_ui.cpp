@@ -192,7 +192,7 @@ namespace cef
         const auto bounds = compute_startup_bounds();
 
         CefWindowInfo window_info;
-        window_info.SetAsPopup(nullptr, "CB Servers"s);
+        window_info.SetAsPopup(nullptr, "WARLINK"s);
         window_info.bounds.width = bounds.width;
         window_info.bounds.height = bounds.height;
         window_info.bounds.x = bounds.x;

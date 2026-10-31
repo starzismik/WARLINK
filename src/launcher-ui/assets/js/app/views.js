@@ -1166,7 +1166,7 @@
                         <div class="detail-coming-soon-chip">${escapeHtml(t('common.comingSoon'))}</div>
                         <p class="detail-coming-soon-note">${escapeHtml(t('library.comingSoonHint'))}</p>
                     </aside>`
-                : `<aside class="detail-actions-panel">
+                : `<aside class="detail-actions-panel">${config.uiId === "hmw-mod" ? `<button class="secondary-action" data-hmw-host>＋ Mes serveurs HorizonMW</button>` : ""}
                         <button class="secondary-action detail-browse-files-action" data-game="${escapeHtml(config.uiId)}">
                             <span class="secondary-action-icon folder-icon"></span>
                             ${escapeHtml(t('common.browseLocalFiles'))}

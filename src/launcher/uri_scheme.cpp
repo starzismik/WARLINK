@@ -26,7 +26,7 @@ namespace uri_scheme
                 return;
             }
 
-            utils::registry::set_hkcu_string(root, L"", L"URL:CB Servers Protocol");
+            utils::registry::set_hkcu_string(root, L"", L"URL:WARLINK Protocol");
             utils::registry::set_hkcu_string(root, L"URL Protocol", L"");
             utils::registry::set_hkcu_string(root + L"\\DefaultIcon", L"", L"\"" + exe_w + L"\",0");
             utils::registry::set_hkcu_string(root + L"\\shell\\open\\command", L"", command);
