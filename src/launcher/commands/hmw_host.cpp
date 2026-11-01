@@ -153,7 +153,8 @@ namespace hmw_host
             if(weapons!="mixed"&&weapons!="sniper"&&weapons!="knife"&&weapons!="none")throw std::runtime_error("Équipement bots invalide");
             line("warlink_bot_weapons",weapons);
             line("warlink_bot_balance",boolean(p,"botBalance",true)?"1":"0");
-            line("scr_teambalance",boolean(p,"botBalance",true)?"0":"1");
+            line("warlink_allow_team_change",boolean(p,"allowTeamChange",true)?"1":"0");
+            line("scr_teambalance",(boolean(p,"allowTeamChange",true)||boolean(p,"botBalance",true))?"0":"1");
             std::string rotation;
             if (p.HasMember("rotation") && p["rotation"].IsArray())
                 for (const auto& map : p["rotation"].GetArray())
@@ -490,6 +491,37 @@ namespace hmw_host
                         std::string text;if(log){log.seekg(0,std::ios::end);const auto size=log.tellg();log.seekg(size>std::streampos(24000)?size-std::streamoff(24000):std::streampos(0));text.assign(std::istreambuf_iterator<char>(log),{});}
                         const auto password=str(p,"rconPassword");for(size_t pos=0;!password.empty()&&(pos=text.find(password,pos))!=std::string::npos;pos+=10)text.replace(pos,password.size(),"[masqué]");
                         set(out,"log",text,a);
+                    }
+                    else if(action=="team-players" || action=="team-move")
+                    {
+                        const auto port=number(p,"port",27017,1024,65535);
+                        const auto status=udp(port,"rcon "+str(p,"rconPassword")+" status");
+                        rapidjson::Value players(rapidjson::kArrayType);
+                        const std::regex row(R"(^\s*([0-9]+)\s+-?[0-9]+\s+No\s+[^\s]+\s+([0-9a-fA-F]+)\s+(.+?)\s+[^\s]+\s+[0-9]+\s*$)");
+                        std::istringstream lines(status);std::string line;
+                        bool found=false;const auto slot=number(request,"slot",0,0,17);const auto guid=utils::string::to_lower(str(request,"guid"));
+                        while(std::getline(lines,line)) {
+                            std::smatch m;if(!std::regex_match(line,m,row))continue;
+                            const int n=std::stoi(m[1].str());const auto player_guid=utils::string::to_lower(m[2].str());
+                            rapidjson::Value v(rapidjson::kObjectType);set(v,"slot",n,a);set(v,"guid",player_guid,a);set(v,"name",m[3].str(),a);players.PushBack(v,a);
+                            if(n==slot && player_guid==guid)found=true;
+                        }
+                        if(action=="team-players")out.AddMember("players",players,a);
+                        else {
+                            const auto team=str(request,"team");if(team!="allies"&&team!="axis")throw std::runtime_error("Équipe invalide");
+                            if(!found)throw std::runtime_error("Ce joueur n'est plus connecté. Actualise la liste.");
+                            const auto nonce=secret().substr(0,12);
+                            const auto command="set warlink_team_request \""+std::to_string(slot)+"|"+guid+"|"+team+"|"+nonce+"\"";
+                            std::this_thread::sleep_for(std::chrono::milliseconds(1100));udp(port,"rcon "+str(p,"rconPassword")+" "+command);
+                            bool applied=false;
+                            for(int i=0;i<3 && !applied;i++) {
+                                std::this_thread::sleep_for(std::chrono::milliseconds(1200));const auto reply=udp(port,"rcon "+str(p,"rconPassword")+" warlink_team_result");
+                                applied=reply.find(nonce+" ok")!=std::string::npos;
+                                if(reply.find(nonce+" rejected")!=std::string::npos)break;
+                            }
+                            if(!applied)throw std::runtime_error("Changement refusé ou non confirmé. Active le choix d'équipe dans un mode par équipes et vérifie que le serveur utilise le nouveau script.");
+                            set(out,"message","Équipe changée. Les bots rééquilibrent la partie sans déplacer les humains.",a);
+                        }
                     }
                     else if(action=="rcon")
                     {

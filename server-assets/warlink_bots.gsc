@@ -14,6 +14,8 @@ init()
     LogPrint("WARLINK_BOTS_READY\n");
     level thread warlink_manage_bots();
     level thread warlink_connections();
+    level thread warlink_team_choices();
+    level thread warlink_team_requests();
     level thread warlink_banner_tests();
     LogPrint("WARLINK_MESSAGES_READY\n");
 }
@@ -261,5 +263,85 @@ warlink_banner_tests()
             sent++;
         }
         LogPrint("WARLINK_BANNER_TEST_SENT " + sent + "\n");
+    }
+}
+
+/*
+Expose the stock team selector to human clients. Server CFG alone cannot set
+ui_allow_teamchange because that client dvar is cheat protected.
+*/
+warlink_team_choices()
+{
+    level endon("game_ended");
+    for (;;)
+    {
+        wait 1;
+        allowed = getdvarint("warlink_allow_team_change");
+        if (getdvar("g_gametype") == "dm" || getdvar("g_gametype") == "gun") allowed = 0;
+        if (allowed) setdvar("scr_teambalance", "0");
+        foreach (player in level.players)
+        {
+            if (isBot(player)) continue;
+            if (isdefined(player.warlink_team_choice) && player.warlink_team_choice == allowed) continue;
+            player.warlink_team_choice = allowed;
+            player setclientdvar("ui_allow_teamchange", allowed);
+            if (allowed) player.dont_auto_balance = true;
+            else player.dont_auto_balance = undefined;
+            LogPrint("WARLINK_TEAM_CHOICE " + player getentitynumber() + " " + allowed + "\n");
+        }
+    }
+}
+
+warlink_move_to_team(team)
+{
+    if (self.pers["team"] == team) return;
+    self.switching_teams = true;
+    self.joining_team = team;
+    self.leaving_team = self.pers["team"];
+    if (self.sessionstate == "playing") self suicide();
+    self maps\mp\gametypes\_menus::addtoteam(team);
+    self maps\mp\gametypes\_menus::endrespawnnotify();
+}
+
+warlink_team_requests()
+{
+    level endon("game_ended");
+    setdvar("warlink_team_request", "");
+    for (;;)
+    {
+        wait 0.5;
+        request = getdvar("warlink_team_request");
+        if (request == "") continue;
+        setdvar("warlink_team_request", "");
+        parts = strtok(request, "|");
+        if (parts.size != 4) continue;
+        result = parts[3] + " rejected";
+        team = parts[2];
+        if (!getdvarint("warlink_allow_team_change") || (team != "allies" && team != "axis") || getdvar("g_gametype") == "dm" || getdvar("g_gametype") == "gun")
+        {
+            setdvar("warlink_team_result", result);
+            continue;
+        }
+        foreach (player in level.players)
+        {
+            if (isBot(player) || player getentitynumber() != int(parts[0])) continue;
+            if (tolower(player getguid()) != parts[1]) continue;
+            if (player.pers["team"] != team)
+            {
+                other = "allies";
+                if (team == "allies") other = "axis";
+                foreach (bot in level.players)
+                {
+                    if (!isBot(bot) || bot.pers["team"] != team) continue;
+                    bot warlink_move_to_team(other);
+                    break;
+                }
+                player warlink_move_to_team(team);
+            }
+            player.dont_auto_balance = true;
+            if (player.pers["team"] == team) result = parts[3] + " ok";
+            LogPrint("WARLINK_HUMAN_TEAM_CHANGED " + player getentitynumber() + " " + team + "\n");
+        }
+        setdvar("warlink_team_result", result);
     }
 }
