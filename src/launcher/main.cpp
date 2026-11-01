@@ -38,6 +38,10 @@ extern "C" const PROPERTYKEY PKEY_AppUserModel_ID =
 
 namespace
 {
+    void remember_launcher_error(const std::string& message) noexcept {
+        try {rapidjson::Document d;d.SetObject();d.AddMember("message",rapidjson::Value(message.c_str(),d.GetAllocator()),d.GetAllocator());rapidjson::StringBuffer b;rapidjson::Writer<rapidjson::StringBuffer> w(b);d.Accept(w);utils::io::write_file(utils::properties::get_appdata_path()/"user"/"warlink-update-result.json",b.GetString());}catch(...){}
+    }
+
     void set_working_directory()
     {
         const auto appdata = utils::properties::get_appdata_path();
@@ -457,16 +461,7 @@ int CALLBACK WinMain(const HINSTANCE instance, HINSTANCE, LPSTR, int)
             }
             catch (const std::exception&)
             {
-                const auto choice = MessageBoxA(nullptr,
-                    "Could not reach the update server to check for launcher updates.\n\n"
-                    "Would you like to start in offline mode? Updates, downloads and online features will be disabled.\n\n"
-                    "If this is your first time running the launcher, it may fail to launch if you continue.",
-                    "WARLINK", MB_ICONWARNING | MB_YESNO);
-
-                if (choice != IDYES)
-                {
-                    return 0;
-                }
+                remember_launcher_error("La vérification de démarrage a échoué. WARLINK a démarré hors ligne ; vérifie ta connexion puis relance l’application.");
 
                 utils::flags::add_flag("offline");
             }
@@ -492,11 +487,11 @@ int CALLBACK WinMain(const HINSTANCE instance, HINSTANCE, LPSTR, int)
     }
     catch (std::exception& e)
     {
-        MessageBoxA(nullptr, e.what(), "ERROR", MB_ICONERROR);
+        remember_launcher_error(e.what());
     }
     catch (...)
     {
-        MessageBoxA(nullptr, "An unknown error occurred", "ERROR", MB_ICONERROR);
+        remember_launcher_error("Une erreur de démarrage est survenue.");
     }
 
     return 1;

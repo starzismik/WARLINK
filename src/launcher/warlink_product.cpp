@@ -34,6 +34,7 @@ rapidjson::Document update_status(){
 void register_commands(cef::cef_ui& ui){
  static std::filesystem::path update_run;
  static HANDLE update_process=nullptr;
+ ui.add_command("warlink-update-result",[](const auto&,rapidjson::Document& out){out.SetObject();const auto file=utils::properties::get_appdata_path()/"user"/"warlink-update-result.json";std::string content;if(utils::io::read_file(file,&content)){out.Parse(content);if(!out.IsObject())out.SetObject();std::error_code ec;std::filesystem::remove(file,ec);}});
  ui.add_command("warlink-update-progress",[](const auto&,rapidjson::Document& out){out.SetObject();std::string content;if(!update_run.empty()&&utils::io::read_file(update_run/"status.json",&content)){if(!out.Parse(content).HasParseError()&&out.IsObject())return;}out.SetObject();const bool failed=update_process&&WaitForSingleObject(update_process,0)==WAIT_OBJECT_0;text(out,"phase",failed?"error":"starting");text(out,"message",failed?"L’installateur n’a pas pu démarrer. Réessaie ou vérifie les permissions du dossier.":"Préparation du téléchargement…");});
  ui.add_command("warlink-update-install",[](const auto&,rapidjson::Document& out){out.SetObject();try{
   auto manifest=update_status();if(!manifest["verified"].GetBool()||!manifest["required"].GetBool())throw std::runtime_error("Aucune nouvelle version vérifiée disponible");
@@ -43,7 +44,7 @@ void register_commands(cef::cef_ui& ui){
   if(!std::filesystem::exists(source))throw std::runtime_error("Installateur de mise à jour manquant");
   update_run=std::filesystem::temp_directory_path()/("WARLINK-update-"+std::to_string(GetCurrentProcessId())+"-"+std::to_string(GetTickCount64()));std::filesystem::create_directories(update_run);
   std::filesystem::copy_file(source,update_run/"install-update.ps1");if(update_process){CloseHandle(update_process);update_process=nullptr;}
-  rapidjson::Document request;request.SetObject();text(request,"installDir",utils::string::path_to_utf8(utils::nt::library{}.get_folder()));text(request,"url",url);text(request,"sha256",hash);text(request,"version",str(manifest,"latest"));request.AddMember("processId",static_cast<unsigned>(GetCurrentProcessId()),request.GetAllocator());
+  rapidjson::Document request;request.SetObject();text(request,"resultPath",utils::string::path_to_utf8(utils::properties::get_appdata_path()/"user"/"warlink-update-result.json"));text(request,"installDir",utils::string::path_to_utf8(utils::nt::library{}.get_folder()));text(request,"url",url);text(request,"sha256",hash);text(request,"version",str(manifest,"latest"));request.AddMember("processId",static_cast<unsigned>(GetCurrentProcessId()),request.GetAllocator());
   rapidjson::StringBuffer buffer;rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);request.Accept(writer);utils::io::write_file(update_run/"request.json",buffer.GetString());
   wchar_t system_folder[MAX_PATH]{};if(!GetSystemDirectoryW(system_folder,MAX_PATH))throw std::runtime_error("Dossier système inaccessible");const auto shell=std::filesystem::path(system_folder)/"WindowsPowerShell"/"v1.0"/"powershell.exe";
   auto command=L"\""+shell.wstring()+L"\" -NoProfile -NonInteractive -ExecutionPolicy Bypass -File \""+(update_run/"install-update.ps1").wstring()+L"\" -RequestPath \""+(update_run/"request.json").wstring()+L"\"";

@@ -21,6 +21,10 @@ function SafeTarget([string]$root,[string]$relative){
  }
  return $target
 }
+function Relaunch([string]$exe,[string]$root){
+ $info=[Diagnostics.ProcessStartInfo]::new();$info.FileName=$exe;$info.WorkingDirectory=$root;$info.UseShellExecute=$false
+ [Diagnostics.Process]::Start($info)|Out-Null
+}
 $journal=[Collections.Generic.List[object]]::new();$closed=$false
 try{
  $root=[IO.Path]::GetFullPath([string]$request.installDir)
@@ -65,18 +69,17 @@ try{
   if(!$copied){throw ('Impossible de remplacer : '+$name)}
  }
  Status 'complete' 'Mise à jour installée. Redémarrage de WARLINK…'
- if(!$NoRestart){Start-Process -FilePath $exe -WorkingDirectory $root}
+ if(!$NoRestart){Relaunch $exe $root}
  # Only this updater's own unique temporary directory is removed.
  $tempRoot=[IO.Path]::GetFullPath([IO.Path]::GetTempPath())
  if((Within $tempRoot $run) -and (Split-Path -Leaf $run) -like 'WARLINK-update-*'){Remove-Item -LiteralPath $run -Recurse -Force}
 }catch{
  $failure=$_.Exception.Message
+ $failureLine=$_.InvocationInfo.ScriptLineNumber
  for($i=$journal.Count-1;$i -ge 0;$i--){$item=$journal[$i];try{if($item.existed){Copy-Item -LiteralPath $item.backup -Destination $item.target -Force}else{Remove-Item -LiteralPath $item.target -Force -ErrorAction SilentlyContinue}}catch{}}
  Status 'error' ('Mise à jour interrompue : '+$failure)
- if($closed -and !$NoRestart){
-  Add-Type -AssemblyName System.Windows.Forms
-  [Windows.Forms.MessageBox]::Show('La mise à jour a échoué. Les fichiers précédents ont été restaurés. '+$failure,'WARLINK')|Out-Null
-  Start-Process -FilePath $exe -WorkingDirectory $root
- }
+ if($request.resultPath){try{[IO.Directory]::CreateDirectory((Split-Path -Parent $request.resultPath))|Out-Null;[IO.File]::WriteAllText($request.resultPath,(@{message=('La mise à jour a échoué. Réessaie depuis WARLINK. '+$failure);line=$failureLine}|ConvertTo-Json),[Text.UTF8Encoding]::new($false))}catch{}}
+ if($closed -and !$NoRestart){try{Relaunch $exe $root}catch{}}
+
  exit 1
 }
