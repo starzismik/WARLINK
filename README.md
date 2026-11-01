@@ -21,4 +21,4 @@ Signaler les problèmes sur notre [Discord](https://discord.gg/eQaeYQgsp7). Cett
 
 ## Licence
 
-Le dépôt reste privé pendant la bêta. WARLINK est dérivé d’un logiciel sous GPLv3 ; la licence et les mentions sont conservées dans [LICENSE](LICENSE) et [CREDITS.md](CREDITS.md). Les destinataires du binaire doivent recevoir l’accès aux sources correspondantes ; elles restent séparées du ZIP de l’application.
+Le dépôt est public. WARLINK est dérivé d’un logiciel sous GPLv3 ; la licence et les mentions sont conservées dans [LICENSE](LICENSE) et [CREDITS.md](CREDITS.md). Les destinataires du binaire doivent recevoir l’accès aux sources correspondantes ; elles sont disponibles dans ce dépôt, séparément du ZIP de l’application.
