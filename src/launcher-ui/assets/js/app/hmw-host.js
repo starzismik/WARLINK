@@ -141,7 +141,7 @@
         const run=fn=>Promise.resolve().then(fn).catch(e=>message(e.message,true));
         overlay.addEventListener('click',event=>{
             const b=event.target.closest('button');if(!b)return;
-            if(b.hasAttribute('data-network'))networkHelp();
+            if(b.hasAttribute('data-network'))window.WarlinkNetworkGuide.open(selected);
             if(b.hasAttribute('data-map-all')){setRotation(maps);return;}
             if(b.hasAttribute('data-map-none')){setRotation([]);return;}
             if(b.dataset.rotation){const a=rotation(),i=Number(b.dataset.index),j=i+Number(b.dataset.rotation);if(j>=0&&j<a.length){[a[i],a[j]]=[a[j],a[i]];setRotation(a);}return;}
@@ -184,7 +184,7 @@
         overlay.querySelector('.hmwh-map-count').textContent=a.length+' carte(s)';overlay.querySelector('.hmwh-map-rotation').innerHTML=a.map((m,i)=>'<div class="hmwh-map-chip"><span class="hmwh-map-index">'+(i+1)+'</span><strong>'+esc(mapLabel(m))+'</strong><button type="button" data-rotation="-1" data-index="'+i+'" aria-label="Monter '+esc(mapLabel(m))+'" '+(i===0?'disabled':'')+'>↑</button><button type="button" data-rotation="1" data-index="'+i+'" aria-label="Descendre '+esc(mapLabel(m))+'" '+(i===a.length-1?'disabled':'')+'>↓</button><button type="button" data-remove-map="'+esc(m)+'" aria-label="Retirer '+esc(mapLabel(m))+'">×</button></div>').join('')||'<p class="hmwh-muted">Sélectionne au moins une carte avant d’enregistrer.</p>';
     }
     function colorLog(log){return log.split(/\r?\n/).map(line=>{const type=/error|fatal|failed|exception|script runtime/i.test(line)?'error':/warn|protected|missing|not found|could not|bad request|not seem to be registered|read only/i.test(line)?'warn':/WARLINK_.*READY|success|server started|complete|listening/i.test(line)?'success':/map|fastfile|zone/i.test(line)?'map':/model|material|texture|image/i.test(line)?'asset':'';return '<span class="hmwh-log-'+type+'">'+esc(line)+'</span>';}).join('\n');}
-    function networkHelp(error=''){const p=values(),text=(error?error+'\n\n':'')+'Profil : '+p.name.replace(/\^[0-9]/g,'')+'\nPort à rediriger : '+p.port+' en TCP ET UDP.\nLe port 27018 ne couvre pas un serveur sur 27017. Chaque profil simultané a besoin de son propre port.\n\n1. Enregistre, démarre et attends Actif.\n2. Autorise uniquement warlink-hmw-'+selected+'.exe sur le port '+p.port+' dans le pare-feu Windows.\n3. Sur la box : redirige le port externe '+p.port+' TCP/UDP vers ce PC et le port interne '+p.port+'.\n4. Clique Publier sur WARLINK pour vérifier l’accès depuis Internet.\n\nAucune clé officielle HMW n’est nécessaire pour WARLINK. Ne désactive pas ton pare-feu et n’active pas de DMZ.';window.showMessageBox('Connexion à la communauté WARLINK',esc(text).replace(/\n/g,'<br>'),['Fermer']);}
+    function networkHelp(error=''){message(error,true);window.WarlinkNetworkGuide.open(selected,error);}
 
     function updateAddress(){const form=overlay?.querySelector('.hmwh-form');if(form)overlay.querySelector('.hmwh-address').textContent=`connect 127.0.0.1:${form.elements.port.value}`;}
     document.addEventListener('click',e=>{if(e.target.closest('[data-hmw-host]'))open();});

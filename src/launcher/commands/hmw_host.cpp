@@ -10,6 +10,8 @@
 #include <utils/flags.hpp>
 #include <utils/http.hpp>
 #include <regex>
+#include <iphlpapi.h>
+#pragma comment(lib, "iphlpapi.lib")
 #pragma comment(lib, "ws2_32.lib")
 
 namespace hmw_host
@@ -278,7 +280,21 @@ namespace hmw_host
         try
         {
             const auto action=str(request,"action","list");
-            if(action=="community-list")
+            if(action=="network-info")
+            {
+                ULONG size=16384;std::vector<unsigned char> buffer(size);
+                auto* adapters=reinterpret_cast<IP_ADAPTER_INFO*>(buffer.data());
+                auto result=GetAdaptersInfo(adapters,&size);
+                if(result==ERROR_BUFFER_OVERFLOW){buffer.resize(size);adapters=reinterpret_cast<IP_ADAPTER_INFO*>(buffer.data());result=GetAdaptersInfo(adapters,&size);}
+                rapidjson::Value interfaces(rapidjson::kArrayType);
+                if(result==NO_ERROR)for(auto* adapter=adapters;adapter;adapter=adapter->Next){
+                    const std::string gateway=adapter->GatewayList.IpAddress.String;
+                    if(gateway.empty()||gateway=="0.0.0.0")continue;
+                    for(auto* item=&adapter->IpAddressList;item;item=item->Next){const std::string ip=item->IpAddress.String;if(ip=="0.0.0.0"||ip.starts_with("127.")||ip.starts_with("169.254."))continue;rapidjson::Value row(rapidjson::kObjectType);set(row,"ipv4",ip,a);set(row,"gateway",gateway,a);interfaces.PushBack(row,a);}
+                }
+                out.AddMember("interfaces",interfaces,a);
+            }
+            else if(action=="community-list")
             {
                 const auto result=utils::http::get_data("https://warlink-community-production.up.railway.app/v1/servers",{},{},{},8,0);
                 if(!result || result->response_code!=200)throw std::runtime_error("Annuaire WARLINK indisponible");

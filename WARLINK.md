@@ -118,3 +118,9 @@ Les cartes sont détectées dans les fastfiles installés (paire carte + chargem
 Équipement bots : classes normales, sniper, mêlée sans munitions (arme encore visible), sans arme. Appliquer les bots permet de changer les réglages pendant la partie. Le rééquilibrage déplace uniquement les bots, sans déplacer de force les humains. Le bandeau Milieu à gauche correspond à l’exemple fourni. Le changement du véritable tag de clan des bots déjà connectés n’est pas pris en charge par cette version.
 
 Validation native : node tests/hmw-options.cjs lance un serveur local isolé sur 27020 dans le dossier de jeu et vérifie chargement réel, HUD, équipements, rééquilibrage, RCON et changement de carte. Le script de production est restauré à la fin.
+
+### Tutoriel réseau guidé
+
+Serveurs → HorizonMW → Guide réseau ouvre un parcours en sept étapes : profil, port, pare-feu Windows, box, adresse locale stable, vérification/publication, invitation. La progression est mémorisée sur le PC ; le port, l’exécutable et les adresses sont adaptés au profil et aux interfaces détectées. Les schémas sont pédagogiques et ne simulent pas une configuration effectuée. Aucun réglage Windows ou de box n’est appliqué automatiquement par le tutoriel.
+
+La preuve UDP de l’annuaire utilise getStatus avec un challenge aléatoire vérifié, plutôt que getInfo dont la réponse peut dépasser le MTU avec de nombreux bots. Le contrôle TCP, l’identité HMW et la preuve de contrôle du propriétaire restent obligatoires.

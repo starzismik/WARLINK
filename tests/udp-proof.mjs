@@ -1,0 +1,4 @@
+import assert from 'node:assert/strict';import dgram from 'node:dgram';import {udpProof} from '../community/udp-probe.mjs';
+const server=dgram.createSocket('udp4');await new Promise(r=>server.bind(0,'127.0.0.1',r));const port=server.address().port;let valid=true,responded=false;
+server.on('message',(b,r)=>{const text=b.subarray(4).toString();assert(text.startsWith('getstatus '));const challenge=text.slice(10);const send=value=>server.send(Buffer.concat([Buffer.from([255,255,255,255]),Buffer.from('statusResponse\n\\challenge\\'+value+'\n\n')]),r.port,r.address);send('wrong-challenge');if(valid)setTimeout(()=>{responded=true;send(challenge);},50);});
+try{await udpProof('127.0.0.1',port,500);assert(responded,'Unrelated challenge accepted');valid=false;await assert.rejects(udpProof('127.0.0.1',port,120),/UDP/);console.log('UDP proof: short query, matching challenge required, mismatched reply rejected.');}finally{server.close();}

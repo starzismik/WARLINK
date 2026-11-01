@@ -7,7 +7,7 @@ async function updateFeed(){if(Date.now()-lastUpdateCheck>60000){lastUpdateCheck
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import dgram from 'node:dgram';
+import {udpProof as udp} from './udp-probe.mjs';
 import {isIP} from 'node:net';
 export function publicIPv4(ip){if(isIP(ip)!==4)return false;const [a,b]=ip.split('.').map(Number);return !(a===0||a===10||a===127||a>=224||(a===169&&b===254)||(a===172&&b>=16&&b<=31)||(a===192&&b===168)||(a===100&&b>=64&&b<=127)||(a===198&&(b===18||b===19)));}
 const dir=process.env.DATA_DIR||'./data';fs.mkdirSync(dir,{recursive:true});const file=path.join(dir,'servers.json');let entries={};try{entries=JSON.parse(fs.readFileSync(file));}catch(e){if(e.code!=='ENOENT')throw e;}
@@ -15,7 +15,6 @@ try{const saved=JSON.parse(fs.readFileSync(path.join(dir,'required-update.json')
 const persist=()=>{fs.writeFileSync(file+'.tmp',JSON.stringify(entries));fs.renameSync(file+'.tmp',file);};
 const digest=s=>crypto.createHash('sha256').update(s).digest('hex');
 const clean=(s,n=160)=>String(s??'').replace(/[\x00-\x1f]/g,'').slice(0,n);
-function udp(ip,port){return new Promise((resolve,reject)=>{const s=dgram.createSocket('udp4');const challenge=crypto.randomBytes(8).toString('hex');const timer=setTimeout(()=>{s.close();reject(Error('Le port UDP ne répond pas depuis Internet.'));},2200);s.once('error',e=>{clearTimeout(timer);s.close();reject(e);});s.on('message',(b,r)=>{if(r.address!==ip||r.port!==port)return;const t=b.toString();if(!t.includes('infoResponse')||!t.includes('\\challenge\\'+challenge))return;clearTimeout(timer);s.close();resolve();});s.send(Buffer.concat([Buffer.from([255,255,255,255]),Buffer.from('getinfo '+challenge)]),port,ip);});}
 async function probe(ip,port){if(!publicIPv4(ip)||!Number.isInteger(port)||port<1024||port>65535)throw Error('Adresse publique ou port invalide');await udp(ip,port);const r=await fetch(`http://${ip}:${port}/getInfo`,{signal:AbortSignal.timeout(3500),redirect:'error'});if(!r.ok)throw Error('Le port TCP ne répond pas');const text=await r.text();if(text.length>64000)throw Error('Réponse serveur trop grande');const j=JSON.parse(text);if(!String(j.gamename||'').toLowerCase().includes('hmw'))throw Error('Serveur HorizonMW requis');return j;}
 function view(e){const j=e.info||{};return{id:e.id,name:clean(j.hostname||'HorizonMW'),map:clean(j.mapname,64),mode:'mp',gametype:clean(j.gametype||'dm',32),players:Math.max(0,Math.min(18,Number(j.clients)||0)),maxPlayers:Math.max(2,Math.min(18,Number(j.sv_maxclients)||18)),bots:Math.max(0,Math.min(17,Number(j.bots)||0)),locked:String(j.isPrivate)==='1',region:'EU',ping:null,community:true,verifiedAt:e.verifiedAt};}
 const rates=new Map();const busy=new Set();let inFlight=0;
