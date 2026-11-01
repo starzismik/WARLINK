@@ -1,8 +1,8 @@
 ![WARLINK](branding/warlink-release-banner.png)
 
-# WARLINK — 1.0.2 BETA
+# WARLINK — 1.0.3 BETA
 
-[![Télécharger](https://img.shields.io/badge/TÉLÉCHARGER-1.0.2_BETA-95EB35?style=for-the-badge&labelColor=202425)](https://github.com/STARZISMIK/WARLINK/releases/download/v1.0.2-beta.1/WARLINK-1.0.2-BETA.zip)
+[![Télécharger](https://img.shields.io/badge/TÉLÉCHARGER-1.0.3_BETA-95EB35?style=for-the-badge&labelColor=202425)](https://github.com/STARZISMIK/WARLINK/releases/download/v1.0.3-beta.1/WARLINK-1.0.3-BETA.zip)
 [![Discord](https://img.shields.io/badge/DISCORD-WARLINK-95EB35?style=for-the-badge&labelColor=202425&logo=discord&logoColor=white)](https://discord.gg/eQaeYQgsp7)
 
 Launcher Windows développé et maintenu par **STARZISMIK**.
@@ -17,7 +17,7 @@ Le paquet ne contient aucun profil personnel, serveur préconfiguré ou connexio
 
 ## Retour de test
 
-Signaler les problèmes sur notre [Discord](https://discord.gg/eQaeYQgsp7). Cette bêta ne déclenche pas de mise à jour obligatoire vers une autre version 1.0.2.
+Signaler les problèmes sur notre [Discord](https://discord.gg/eQaeYQgsp7). Les nouvelles versions sont obligatoires. À partir de la 1.0.3, le bouton de mise à jour télécharge et vérifie le ZIP, remplace les fichiers puis relance WARLINK automatiquement. Les réglages sont conservés. Depuis une version 1.0.2 ou antérieure, installer cette version manuellement une dernière fois.
 
 ## Licence
 

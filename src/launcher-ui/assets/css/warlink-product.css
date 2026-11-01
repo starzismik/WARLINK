@@ -170,3 +170,5 @@ html[data-accent="starzismik"] .hmw-state.is-active,html[data-accent="starzismik
 .warlink-account-content .mods-btn{display:inline-flex;align-items:center;justify-content:center;gap:12px;margin:28px 0 18px;min-height:42px;padding:12px 20px;border-radius:0}.warlink-account-content .mods-btn .warlink-discord-icon{display:block;width:19px;height:16px}
 .hmw-owned-servers .warlink-account-content .warlink-account-feedback{min-height:38px;max-width:480px;font-size:11px;line-height:1.7;margin:0 auto}.warlink-account-content .mods-btn:disabled{cursor:wait;opacity:.55}
 @media(max-width:650px){.warlink-account-gate{min-height:340px;padding:32px 16px}.warlink-account-content h2{font-size:21px}}
+
+.warlink-update-card progress{display:block;width:100%;height:5px;accent-color:var(--accent);margin-top:16px}.warlink-update-install-message{color:var(--text-muted);font-size:12px;line-height:1.7}

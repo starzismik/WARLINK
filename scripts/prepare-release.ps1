@@ -20,6 +20,7 @@ Copy-Item -LiteralPath (Join-Path $root 'build/runtime/x64/Release/cef') -Destin
 Copy-Item -LiteralPath (Join-Path $root 'build/runtime/x64/Release/discord') -Destination $data -Recurse
 Copy-Item -LiteralPath (Join-Path $root 'src/launcher-ui') -Destination $data -Recurse
 Copy-Item -LiteralPath (Join-Path $root 'server-assets') -Destination $data -Recurse
+Copy-Item -LiteralPath (Join-Path $root 'update-assets') -Destination $data -Recurse
 Copy-Item -LiteralPath $manifestSource -Destination (Join-Path $stage 'warlink/manifest') -Recurse
 [IO.File]::WriteAllText((Join-Path $stage 'warlink/portable.marker'),'')
 foreach($name in @('LICENSE','CREDITS.md','README.md')){Copy-Item -LiteralPath (Join-Path $root $name) -Destination $stage}
