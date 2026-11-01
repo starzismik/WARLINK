@@ -105,7 +105,12 @@ namespace commands::ui_commands
 
             // Preserve the window's current state. SW_SHOWDEFAULT would un-maximize a
             // window that was restored maximized on launch, and clobber the saved flag.
-            if (IsIconic(window))
+            if (GetPropW(window, L"WARLINK_START_MAXIMIZED"))
+            {
+                RemovePropW(window, L"WARLINK_START_MAXIMIZED");
+                ShowWindow(window, SW_SHOWMAXIMIZED);
+            }
+            else if (IsIconic(window))
             {
                 ShowWindow(window, SW_RESTORE);
             }

@@ -291,6 +291,10 @@ function applyOfflineIndicator() {
 }
 
 async function initialize() {
+    // Show the painted startup screen before any initialization work or dialogs.
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    try { await window.executeCommand("show"); } catch (_) {}
+    const startupMinimum = new Promise(resolve => setTimeout(resolve, 3000));
     // Detect offline mode (-offline flag) before anything network-facing starts
     window.IS_OFFLINE = false;
     if (typeof window.executeCommand === 'function') {
@@ -324,6 +328,7 @@ async function initialize() {
         } catch (_) {}
     }
 
+    await startupMinimum;
     await initializeLanguage();
     await window.WarlinkProduct.initialize();
 

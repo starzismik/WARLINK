@@ -212,7 +212,7 @@ namespace cef
 
         if (bounds.maximized)
         {
-            ShowWindow(this->get_window(), SW_MAXIMIZE);
+            SetPropW(this->get_window(), L"WARLINK_START_MAXIMIZED", reinterpret_cast<HANDLE>(1));
         }
     }
 
