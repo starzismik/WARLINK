@@ -161,6 +161,7 @@ namespace cef
 
         CefSettings settings;
         settings.no_sandbox = TRUE;
+        settings.background_color = CefColorSetARGB(255, 16, 18, 20);
         //settings.single_process = TRUE;
         //settings.windowless_rendering_enabled = TRUE;
         //settings.pack_loading_disabled = FALSE;
@@ -187,6 +188,7 @@ namespace cef
         CefRegisterSchemeHandlerFactory("http", "cbservers", new cef_ui_scheme_handler_factory(folder, this->command_handlers_));
 
         CefBrowserSettings browser_settings;
+        browser_settings.background_color = CefColorSetARGB(255, 16, 18, 20);
         //browser_settings.windowless_frame_rate = 60;
 
         const auto bounds = compute_startup_bounds();

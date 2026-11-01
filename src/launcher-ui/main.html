@@ -3,6 +3,12 @@
 
 <head>
     <title>WARLINK</title>
+    <style>
+    html{background:#101214}body.hidden{opacity:1!important}body.hidden>*:not(#warlink-startup):not(.warlink-product-overlay){visibility:hidden}
+    #warlink-startup{position:fixed;inset:0;z-index:99000;display:flex;align-items:center;justify-content:center;background:var(--bg-base,#101214);color:var(--text,#e8ecef);font-family:Arial,sans-serif}
+    .warlink-startup-inner{text-align:center;width:min(340px,80vw)}.warlink-startup-logo{width:88px;height:88px;display:block;margin:0 auto 28px}.warlink-startup-track{height:4px;overflow:hidden;background:#ffffff14;border:1px solid #ffffff12}.warlink-startup-bar{width:38%;height:100%;background:var(--accent,#95eb35);animation:warlink-startup-progress 1.4s ease-in-out infinite}.warlink-startup-inner p{font-size:13px;line-height:1.6;color:var(--text-muted,#979fa7);margin:20px 0 0}.warlink-startup-inner strong{display:block;font-size:12px;letter-spacing:4px;margin:0 0 24px}
+    @keyframes warlink-startup-progress{from{transform:translateX(-110%)}to{transform:translateX(370%)}}@media(prefers-reduced-motion:reduce){.warlink-startup-bar{animation:none;width:100%;opacity:.7}}
+    </style>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="preload" href="./assets/fonts/rajdhani-600.woff2" as="font" type="font/woff2" crossorigin>
@@ -44,6 +50,7 @@
 </head>
 
 <body class="hidden">
+    <div id="warlink-startup" role="status" aria-live="polite"><div class="warlink-startup-inner"><img class="warlink-startup-logo" src="./assets/img/brand/warlink-w.svg" alt="WARLINK"><strong>WARLINK</strong><div class="warlink-startup-track" role="progressbar" aria-label="Démarrage de WARLINK"><div class="warlink-startup-bar"></div></div><p>Démarrage de l’application en cours…</p></div></div>
     <div class="window">
         <div class="title-bar">
             <span class="title-text"><span class="warlink-title-arrow" aria-hidden="true"></span><span class="title-name">WARLINK</span><span class="title-author">par STARZISMIK</span><span class="title-version">1.0.0</span></span>
