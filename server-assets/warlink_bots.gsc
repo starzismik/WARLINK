@@ -16,6 +16,7 @@ init()
     level thread warlink_connections();
     level thread warlink_team_choices();
     level thread warlink_team_requests();
+    level thread warlink_moderation();
     level thread warlink_banner_tests();
     LogPrint("WARLINK_MESSAGES_READY\n");
 }
@@ -357,5 +358,50 @@ warlink_team_requests()
             LogPrint("WARLINK_HUMAN_TEAM_CHANGED " + player getentitynumber() + " " + team + "\n");
         }
         setdvar("warlink_team_result", result);
+    }
+}
+
+/* Server-side exclusions remain active when the launcher is closed. */
+warlink_moderation()
+{
+    level endon("game_ended");
+    setdvar("warlink_mod_request", "");
+    for (;;)
+    {
+        wait 0.5;
+        now = gettimeutc();
+        setdvar("warlink_moderation_utc", now);
+        foreach (player in level.players)
+        {
+            if (isBot(player)) continue;
+            guid = tolower(player getguid());
+            until = getdvarint("warlink_ban_" + guid);
+            if (until == -1 || until > now)
+            {
+                LogPrint("WARLINK_EXCLUSION_ENFORCED " + guid + "\n");
+                kick(player getentitynumber(), "WARLINK : exclusion de ce serveur");
+            }
+        }
+        request = getdvar("warlink_mod_request");
+        if (request == "") continue;
+        setdvar("warlink_mod_request", "");
+        parts = strtok(request, "|");
+        if (parts.size != 6) continue;
+        result = parts[3] + " rejected";
+        foreach (player in level.players)
+        {
+            if (isBot(player) || player getentitynumber() != int(parts[0])) continue;
+            if (tolower(player getguid()) != parts[1]) continue;
+            action = parts[2];
+            if (action == "kick" || action == "temporary" || action == "ban")
+            {
+                if (action != "kick") setdvar("warlink_ban_" + parts[1], parts[5]);
+                result = parts[3] + " ok";
+                setdvar("warlink_mod_result", result);
+                kick(player getentitynumber(), parts[4]);
+                LogPrint("WARLINK_MODERATION " + action + " " + parts[1] + "\n");
+            }
+        }
+        setdvar("warlink_mod_result", result);
     }
 }

@@ -99,6 +99,21 @@ namespace hmw_host
         {
             return game_path(p) / ("warlink-hmw-" + str(p,"id") + ".exe");
         }
+        int64_t utc_now() { return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count(); }
+        std::string moderation_config(const std::string& id)
+        {
+            const auto bans=read_json(profile_dir(id)/"bans.json");std::string cfg="// WARLINK server exclusions\n";
+            for(auto it=bans.MemberBegin();it!=bans.MemberEnd();++it) {
+                const std::string guid=it->name.GetString();if(!std::regex_match(guid,std::regex("[a-f0-9]{1,32}")))continue;
+                const auto& entry=it->value;if(!entry.IsObject()||!entry.HasMember("expires")||!entry["expires"].IsInt64())continue;
+                const auto expiry=entry["expires"].GetInt64();cfg+="set warlink_ban_"+guid+" \""+std::to_string(expiry)+"\"\n";
+            }
+            return cfg;
+        }
+        void save_moderation_config(const std::string& id,const rapidjson::Value& p)
+        {
+            if(!utils::io::write_file(game_path(p)/"main"/("warlink_bans_"+id+".cfg"),moderation_config(id)))throw std::runtime_error("Écriture des exclusions impossible");
+        }
         std::string make_config(const rapidjson::Value& p)
         {
             std::string cfg = "// WARLINK HorizonMW server - generated configuration\n";
@@ -167,6 +182,7 @@ namespace hmw_host
             const auto advanced = str(p,"advanced");
             if (advanced.size()>32000 || advanced.find('\0')!=std::string::npos) throw std::runtime_error("Configuration avancée trop longue");
             cfg += "\n// Advanced settings\n" + advanced + "\n";
+            cfg += "exec warlink_bans_" + str(p,"id") + ".cfg\n";
             return cfg;
         }
         std::string udp(int port, const std::string& payload, int timeout = 900, const std::string& address = "127.0.0.1")
@@ -223,6 +239,7 @@ namespace hmw_host
             std::filesystem::create_directories(game/"main");
             std::filesystem::create_directories(game/"user_scripts"/"mp");
             if(!utils::io::write_file(game/"main"/config_name(id),make_config(p))) throw std::runtime_error("Écriture de la configuration impossible");
+            save_moderation_config(id,p);
             const auto script_path=game/"user_scripts"/"mp"/"warlink_bots.gsc";
             std::string old;
             if(utils::io::read_file(script_path,&old) && old!=script)
@@ -492,6 +509,57 @@ namespace hmw_host
                         const auto password=str(p,"rconPassword");for(size_t pos=0;!password.empty()&&(pos=text.find(password,pos))!=std::string::npos;pos+=10)text.replace(pos,password.size(),"[masqué]");
                         set(out,"log",text,a);
                     }
+                    else if(action=="moderation-list" || action=="unban")
+                    {
+                        auto bans=read_json(dir/"bans.json");
+                        if(action=="unban") {
+                            const auto guid=utils::string::to_lower(str(request,"guid"));if(!std::regex_match(guid,std::regex("[a-f0-9]{1,32}")))throw std::runtime_error("Identité invalide");
+                            if(!bans.HasMember(guid.c_str()))throw std::runtime_error("Exclusion introuvable");
+                            bans.RemoveMember(guid.c_str());write_json(dir/"bans.json",bans);save_moderation_config(id,p);
+                            if(const auto process=owned_process(id,p)){
+                                CloseHandle(process);const auto port=number(p,"port",27017,1024,65535);
+                                udp(port,"rcon "+str(p,"rconPassword")+" set warlink_ban_"+guid+" 0");std::this_thread::sleep_for(std::chrono::milliseconds(1100));
+                                const auto check=udp(port,"rcon "+str(p,"rconPassword")+" warlink_ban_"+guid);
+                                if(check.find("is: \"0\"")==std::string::npos)throw std::runtime_error("Exclusion retirée du fichier, mais révocation en direct non confirmée. Réessaie la commande ou redémarre ce serveur.");
+                            }
+                            set(out,"message","Exclusion levée sur ce serveur.",a);
+                        }
+                        rapidjson::Value entries(rapidjson::kArrayType);
+                        for(auto it=bans.MemberBegin();it!=bans.MemberEnd();++it) {
+                            if(!it->value.IsObject()||!it->value.HasMember("expires")||!it->value["expires"].IsInt64())continue;
+                            const auto expiry=it->value["expires"].GetInt64();if(expiry!=-1&&expiry<=utc_now())continue;
+                            rapidjson::Value v(it->value,a);set(v,"guid",it->name.GetString(),a);entries.PushBack(v,a);
+                        }
+                        out.AddMember("bans",entries,a);
+                    }
+                    else if(action=="moderate")
+                    {
+                        const auto guid=utils::string::to_lower(str(request,"guid")),kind=str(request,"kind");
+                        if(kind=="rename")throw std::runtime_error("Renommage du client non pris en charge par cette version HorizonMW");const auto slot=number(request,"slot",0,0,17);
+                        if(!std::regex_match(guid,std::regex("[a-f0-9]{1,32}")) || (kind!="kick"&&kind!="temporary"&&kind!="ban"&&kind!="rename"))throw std::runtime_error("Action de modération invalide");
+                        auto reason=safe_text(str(request,"reason","Modération WARLINK"),120);if(reason.empty())reason="Modération WARLINK";
+                        if(reason.find('|')!=std::string::npos)throw std::runtime_error("Le caractère | est interdit");
+                        const auto port=number(p,"port",27017,1024,65535);
+                        const auto status=udp(port,"rcon "+str(p,"rconPassword")+" status");
+                        const std::regex row(R"(^\s*([0-9]+)\s+-?[0-9]+\s+No\s+[^\s]+\s+([0-9a-fA-F]+)\s+(.+?)\s+[^\s]+\s+[0-9]+\s*$)");
+                        std::istringstream lines(status);std::string line,name;while(std::getline(lines,line)){std::smatch m;if(std::regex_match(line,m,row)&&std::stoi(m[1].str())==slot&&utils::string::to_lower(m[2].str())==guid){name=m[3].str();break;}}
+                        if(name.empty())throw std::runtime_error("Ce joueur n'est plus connecté. Actualise la liste.");
+                        int64_t expiry=0;
+                        if(kind=="temporary"||kind=="ban") {
+                            expiry=kind=="ban"?-1:utc_now()+number(request,"seconds",3600,10,31536000);
+                            auto bans=read_json(dir/"bans.json");if(bans.MemberCount()>=500&&!bans.HasMember(guid.c_str()))throw std::runtime_error("Maximum 500 exclusions enregistrées");
+                            rapidjson::Value entry(rapidjson::kObjectType);auto& ba=bans.GetAllocator();set(entry,"name",name,ba);set(entry,"reason",reason,ba);entry.AddMember("expires",expiry,ba);entry.AddMember("created",utc_now(),ba);
+                            if(bans.HasMember(guid.c_str()))bans.RemoveMember(guid.c_str());bans.AddMember(rapidjson::Value(guid.c_str(),ba),entry,ba);write_json(dir/"bans.json",bans);save_moderation_config(id,p);
+
+                        }
+                        std::string value=reason;if(kind=="rename"){value=safe_text(str(request,"value"),24);if(value.empty()||value.find('|')!=std::string::npos)throw std::runtime_error("Pseudo invalide");}
+                        const auto nonce=secret().substr(0,12);const auto payload=std::to_string(slot)+"|"+guid+"|"+kind+"|"+nonce+"|"+value+"|"+std::to_string(expiry);
+                        std::this_thread::sleep_for(std::chrono::milliseconds(1100));udp(port,"rcon "+str(p,"rconPassword")+" set warlink_mod_request \""+payload+"\"");
+                        bool applied=false;for(int i=0;i<3&&!applied;i++){std::this_thread::sleep_for(std::chrono::milliseconds(1200));const auto response=udp(port,"rcon "+str(p,"rconPassword")+" warlink_mod_result");applied=response.find(nonce+" ok")!=std::string::npos;if(response.find(nonce+" rejected")!=std::string::npos)break;}
+                        if(!applied)throw std::runtime_error("Action non confirmée par le serveur. Les exclusions enregistrées restent conservées ; vérifie le journal et la liste des exclusions.");
+                        rapidjson::Value audit(rapidjson::kObjectType);set(audit,"action",kind,a);set(audit,"guid",guid,a);set(audit,"name",name,a);set(audit,"reason",reason,a);audit.AddMember("time",utc_now(),a);rapidjson::StringBuffer buffer;rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);audit.Accept(writer);utils::io::write_file(dir/"moderation-audit.jsonl",std::string(buffer.GetString())+"\n",true);
+                        set(out,"message",kind=="kick"?"Joueur expulsé ; il peut revenir.":kind=="temporary"?"Joueur exclu temporairement de ce serveur.":kind=="ban"?"Joueur banni de ce serveur jusqu'à révocation.":"Pseudo appliqué pour la session.",a);
+                    }
                     else if(action=="team-players" || action=="team-move")
                     {
                         const auto port=number(p,"port",27017,1024,65535);
@@ -506,7 +574,7 @@ namespace hmw_host
                             rapidjson::Value v(rapidjson::kObjectType);set(v,"slot",n,a);set(v,"guid",player_guid,a);set(v,"name",m[3].str(),a);players.PushBack(v,a);
                             if(n==slot && player_guid==guid)found=true;
                         }
-                        if(action=="team-players")out.AddMember("players",players,a);
+                        if(action=="team-players"){out.AddMember("players",players,a);std::istringstream all(status);int bots=0;while(std::getline(all,line))if(std::regex_search(line,std::regex(R"(^\s*[0-9]+\s+-?[0-9]+\s+Yes\s)")))bots++;set(out,"bots",bots,a);}
                         else {
                             const auto team=str(request,"team");if(team!="allies"&&team!="axis")throw std::runtime_error("Équipe invalide");
                             if(!found)throw std::runtime_error("Ce joueur n'est plus connecté. Actualise la liste.");
