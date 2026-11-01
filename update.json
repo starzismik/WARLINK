@@ -1,7 +1,8 @@
 {
-  "version": "1.0.0",
-  "released": false,
+  "version": "1.0.1",
+  "released": true,
   "mandatory": true,
-  "downloadUrl": "",
-  "notes": "Version initiale en validation — aucune archive publiée."
+  "downloadUrl": "https://github.com/starzismik/WARLINK/releases/download/v1.0.1-beta.1/WARLINK-1.0.1-BETA.zip",
+  "sha256": "ba58319eb676b57e1664fa0b757426823f7dfcabcd56687c56cb0eaee6a2ffda",
+  "notes": "BÊTA 1.0.1 : correction des manifestes manquants pour gérer et installer les jeux ; présence Discord WARLINK. Fermer WARLINK et extraire tout le ZIP dans son dossier existant en remplaçant les fichiers. Les réglages sont conservés."
 }
