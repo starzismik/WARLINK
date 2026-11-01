@@ -1,3 +1,4 @@
+import {canManagePublication} from './publication-owner.mjs';
 import {auth,authorize} from './auth.mjs';
 import http from 'node:http';
 let updateCache=JSON.parse(fsReadBaseline());
@@ -28,10 +29,11 @@ if(req.method!=='POST'||!['/v1/publish','/v1/unpublish','/v1/author'].includes(u
 const source=String(req.headers['x-real-ip']||req.socket.remoteAddress||'').replace(/^::ffff:/,'');if(!publicIPv4(source))return send(400,{error:'Adresse IPv4 publique requise'});
 const rate=rates.get(source)||{time:Date.now(),n:0};if(Date.now()-rate.time>60000){rate.time=Date.now();rate.n=0;}if(++rate.n>12)return send(429,{error:'Trop de demandes'});rates.set(source,rate);
 let body='';for await(const chunk of req){body+=chunk;if(body.length>4096)return send(413,{error:'Requête trop grande'});}const input=JSON.parse(body);if(!/^[a-f0-9]{64}$/.test(input.token||''))return send(400,{error:'Jeton propriétaire invalide'});const port=Number(input.port),id=`${source}:${port}`,hash=digest(input.token),old=entries[id];
-if(old&&old.owner!==hash)return send(403,{error:'Ce serveur appartient à un autre éditeur'});
+const publisher=await authorize(req);
+if(!canManagePublication(old,hash,publisher.id))return send(403,{error:'Ce serveur appartient à un autre propriétaire Discord'});
 if(url.pathname==='/v1/author'){if(!old)return send(404,{error:'Serveur non publié'});old.author=clean(String(input.author||'').trim(),48);old.authorColor=/^#[a-f0-9]{6}$/i.test(input.authorColor||'')?input.authorColor:'#95eb35';persist();return send(200,{ok:true,server:view(old)});}
 if(url.pathname==='/v1/unpublish'){if(old){delete entries[id];persist();}return send(200,{ok:true});}
-const publisher=await authorize(req);if(old?.discordId&&old.discordId!==publisher.id)return send(403,{error:'Ce serveur appartient à un autre compte Discord'});
+
 if(inFlight>=8||busy.has(id))return send(429,{error:'Vérification en cours'});busy.add(id);inFlight++;try{const info=await probe(source,port);if(!old&&!String(info.sv_motd||'').includes('[WL:'+hash+']'))return send(403,{error:'Preuve de contrôle du serveur absente'});if(!old&&Object.keys(entries).length>=1024)return send(503,{error:'Annuaire complet'});entries[id]={id,ip:source,port,author:clean(String(input.author||'').trim()||publisher.displayName,48),discordId:publisher.id,authorColor:/^#[a-f0-9]{6}$/i.test(input.authorColor||'')?input.authorColor:'#95eb35',owner:hash,verifiedAt:Date.now(),info:{hostname:clean(info.hostname),mapname:clean(info.mapname,64),gametype:clean(info.gametype,32),clients:info.clients,sv_maxclients:info.sv_maxclients,bots:info.bots,isPrivate:info.isPrivate}};persist();return send(200,{ok:true,server:view(entries[id])});}finally{busy.delete(id);inFlight--;}
 }catch(e){send(400,{error:clean(e.message)});}});
 let checking=false;setInterval(async()=>{if(checking)return;checking=true;try{for(const e of Object.values(entries)){if(busy.has(e.id))continue;try{e.info=await probe(e.ip,e.port);e.info.sv_serverkey=undefined;e.verifiedAt=Date.now();}catch{}if(Date.now()-e.verifiedAt>86400000)delete entries[e.id];}persist();for(const[k,v]of rates)if(Date.now()-v.time>120000)rates.delete(k);}finally{checking=false;}},30000).unref();

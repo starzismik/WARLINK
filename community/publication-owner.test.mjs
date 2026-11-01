@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {canManagePublication as can} from './publication-owner.mjs';
+const entry={owner:'secret-hash',discordId:'author'};
+assert.equal(can(entry,'secret-hash','author'),true);
+assert.equal(can(entry,'secret-hash','other-author'),false);
+assert.equal(can(entry,'wrong-key','author'),false);
+assert.equal(can(entry,'wrong-key','other-author'),false);
+assert.equal(can({owner:'secret-hash'},'secret-hash','author'),false);
+assert.equal(can(undefined,'new-key','new-author'),true);
+console.log('6 contrôles propriétaire : OK');
