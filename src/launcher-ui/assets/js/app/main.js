@@ -350,6 +350,7 @@ async function initialize() {
 
     syncConsoleButtonLabel();
 
+    document.getElementById('warlink-startup')?.remove();
     // Remove hidden class after the first localized render
     document.body.classList.remove('hidden');
 
