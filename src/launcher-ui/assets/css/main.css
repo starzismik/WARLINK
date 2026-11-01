@@ -266,8 +266,8 @@ body.offline-mode #friends {
 }
 
 #close-button:hover { background: rgba(255, 77, 94, 0.85); color: #fff; }
-#minimize-button:hover { background: rgba(255, 178, 63, 0.85); color: #000; }
-#maximize-button:hover { background: rgba(255, 255, 255, 0.16); color: #fff; }
+#minimize-button:hover { background: var(--accent); color: var(--accent-contrast, #10170b); }
+#maximize-button:hover { background: var(--accent-soft); color: var(--accent); }
 
 /* ============================================================ */
 /* LAYOUT                                                       */
@@ -8841,3 +8841,6 @@ html:not([data-theme])[data-accent="starzismik"] ::selection {
     background: rgba(149,235,53,.55);
     color: #fff;
 }
+
+html[data-theme="purple-gradient"]{--bg-gradient:radial-gradient(ellipse at top left,#1A1A2E 0%,#0A0A0F 55%,#07070C 100%)}
+html[data-theme="navy-gradient"]{--bg-gradient:radial-gradient(ellipse at top left,#102c50 0%,#081728 55%,#050d17 100%);--accent:#327bd1;--accent-soft:rgba(50,123,209,.14);--accent-deep:#20568f;--accent-grad:linear-gradient(135deg,#327bd1,#20568f);--nav-active-bg:rgba(50,123,209,.15);--nav-active-border:#315c89;--chip-active-bg:rgba(50,123,209,.15);--chip-active-border:#315c89;--focus-border:#327bd1;--link-hover:#73a8e8;--hero-tint:rgba(30,83,145,.18)}

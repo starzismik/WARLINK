@@ -16,7 +16,7 @@
                 view: caps.workshop ? 'workshop' : 'installed',
                 query: '',
                 kind: 'all',
-                sort: 'popular',
+                sort: gameId==='boiii'?'collection':'popular',
                 page: 1,
                 installed: null,
                 results: null,
@@ -209,6 +209,10 @@
             s.installed = [];
         }
         renderInstalled(gameId);
+        if(gameId==='boiii'){
+            const pending=s.installed.filter(m=>m.workshopId&&!m.preview);
+            (async()=>{for(let i=0;i<pending.length;i+=4){await Promise.all(pending.slice(i,i+4).map(async m=>{try{const d=await window.ModsService.getDetails(gameId,m.workshopId);if(d?.preview)m.preview=d.preview;}catch{}}));if(query(gameId))renderInstalled(gameId);}})();
+        }
 
         const badge = query(gameId, '.mods-count');
         if (badge) {
@@ -236,7 +240,10 @@
             return;
         }
 
-        host.innerHTML = `<div class="mods-list">${s.installed.map(mod => installedRowHTML(gameId, s, mod)).join('')}</div>`;
+        const filter=s.installedKind||'all',counts={all:s.installed.length,map:s.installed.filter(m=>m.kind==='map').length,mod:s.installed.filter(m=>m.kind==='mod').length};
+        const icon=k=>k==='all'?'<span aria-hidden="true">▦</span>':'<img src="assets/img/mods/'+(k==='map'?'maps_icon.png':'mods.png')+'" alt="">';
+        host.innerHTML = `<div class="warlink-installed-filters" role="group" aria-label="Filtrer les contenus installés">${[['all','Tout'],['map','Cartes'],['mod','Mods']].map(([k,label])=>'<button type="button" class="mods-btn '+(filter===k?'active':'')+'" data-installed-kind="'+k+'" aria-pressed="'+(filter===k)+'">'+icon(k)+'<span>'+label+'</span><small>'+counts[k]+'</small></button>').join('')}</div><div class="mods-list warlink-installed-list">${s.installed.filter(m=>filter==='all'||m.kind===filter).map(mod => installedRowHTML(gameId, s, mod)).join('')||'<p class="mods-empty">Aucun contenu dans cette catégorie.</p>'}</div>`;
+        host.querySelectorAll('[data-installed-kind]').forEach(b=>b.onclick=()=>{s.installedKind=b.dataset.installedKind;renderInstalled(gameId);});
         host.querySelectorAll('.mods-update-btn').forEach(button => {
             button.addEventListener('click', () => updateMod(gameId, button.dataset.id));
         });
@@ -286,7 +293,7 @@
         const actions = job
             ? `<span class="mods-row-progress">${escapeHtml(jobLabel(job))}</span>
                <button class="mods-btn is-danger mods-cancel-btn" data-id="${escapeHtml(mod.workshopId)}">${escapeHtml(t('mods.cancel'))}</button>`
-            : `${gameId === 'boiii' ? `<button class="mods-btn mods-language-btn" data-id="${escapeHtml(mod.id)}">Langue EN / FR</button>` : ''}
+            : `${gameId === 'boiii' ? `<button class="mods-btn mods-language-btn" data-id="${escapeHtml(mod.id)}">⇄ Changer la langue</button>` : ''}
                ${mod.updateAvailable ? `<button class="mods-btn mods-update-btn" data-id="${escapeHtml(mod.id)}">${escapeHtml(t('mods.update'))}</button>` : ''}
                ${mod.workshopId && s.caps.workshop ? iconButtonHTML(mod.id, 'mods-details-btn', 'info-icon', t('mods.details')) : ''}
                ${iconButtonHTML(mod.id, 'mods-row-folder-btn', 'folder-icon', t('mods.openModFolder'))}
@@ -295,6 +302,7 @@
         return `
             <div class="mods-row${mod.updateAvailable ? ' is-updatable' : ''}" data-mod-id="${escapeHtml(mod.id)}">
                 <div class="mods-row-main">
+                    ${gameId==='boiii'?`<div class="warlink-mod-thumb">${/^https?:/.test(mod.preview||'')?`<img src="${escapeHtml(mod.preview)}" alt="" loading="lazy">`:'<span>▦</span>'}</div>`:''}
                     ${kindBadge(mod.kind)}
                     <strong class="mods-row-name">${escapeHtml(mod.name)}</strong>
                     ${mod.updateAvailable ? `<span class="badge status-partial mods-update-badge">${escapeHtml(t('mods.updateAvailable'))}</span>` : ''}
@@ -399,11 +407,12 @@
             if (!langs.length) { window.showToast('Aucun fichier de langue .ff ou .xpak dans ce contenu.', 'info'); return; }
             const labels = {en:'English',fr:'Français',ja:'Japanese',tc:'Traditional Chinese',sc:'Simplified Chinese',es:'Spanish',ge:'German',it:'Italian',po:'Portuguese',ru:'Russian',bp:'Polish',ea:'English Arabic'};
             const options = codes => codes.map(c => `<option value="${c}">${labels[c]}</option>`).join('');
+            let from=langs[0],to='fr';
+            const capture=event=>{if(event.target.id==='warlink-lang-from')from=event.target.value;if(event.target.id==='warlink-lang-to')to=event.target.value;};document.addEventListener('change',capture);
             const choice = await window.showMessageBox('Compatibilité de langue',
                 `Dossier : ${escapeHtml(info.path)}<br><br>Ferme BO3 avant de continuer.<br>Langue source : <select id="warlink-lang-from">${options(langs)}</select><br>Langue du jeu : <select id="warlink-lang-to">${options(['fr','en',...Object.keys(labels).filter(c=>c!=='fr' && c!=='en')])}</select><br><br>Renomme les fichiers sans les écraser. Ne traduit pas les textes. Pour revenir en arrière, refais la conversion dans le sens inverse.`, ['Annuler','Appliquer']);
+            document.removeEventListener('change',capture);
             if (choice !== 1) return;
-            const from = document.getElementById('warlink-lang-from').value;
-            const to = document.getElementById('warlink-lang-to').value;
             const result = await window.executeCommand('mod-language', {...request, action:'change', from, to});
             if (!result?.success) throw new Error(result?.error || 'Conversion impossible.');
             window.showToast(`${result.changed} fichier(s) renommé(s).`, 'success');
@@ -475,7 +484,7 @@
                     ${chip('mod', t('mods.filterMods'))}
                 </div>
                 <select class="cdn-select mods-sort">
-                    ${option('popular', t('mods.sortPopular'))}
+                    ${gameId==='boiii'?option('collection','Playlist WARLINK · 15 contenus'):''}${option('popular', t('mods.sortPopular'))}
                     ${option('recent', t('mods.sortRecent'))}
                     ${option('name', t('mods.sortName'))}
                 </select>

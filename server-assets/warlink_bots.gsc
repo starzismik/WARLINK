@@ -21,6 +21,7 @@ init()
     level thread warlink_team_requests();
     level thread warlink_moderation();
     level thread warlink_banner_tests();
+    level thread warlink_live_announcements();
     level thread warlink_xp_controller();
     LogPrint("WARLINK_MESSAGES_READY\n");
 }
@@ -121,7 +122,7 @@ warlink_welcome()
         self waittill("spawned_player");
         wait 1;
         if (getdvar("warlink_bot_weapons") == "sniper") self enableweaponpickup();
-        if (first_spawn || getdvarint("warlink_welcome_respawn"))
+        if (first_spawn)
         {
             text = getdvar("warlink_welcome");
             discord = getdvar("warlink_discord");
@@ -132,6 +133,11 @@ warlink_welcome()
                 self warlink_display_message("Discord : " + discord);
             }
             LogPrint("WARLINK_WELCOME_SENT\n");
+        }
+        else
+        {
+            text = getdvar("warlink_respawn_message");
+            if (text != "") self warlink_display_message(text, getdvar("warlink_respawn_position"));
         }
         first_spawn = false;
     }
@@ -153,9 +159,9 @@ warlink_announcements()
     }
 }
 
-warlink_display_message(text)
+warlink_display_message(text, position)
 {
-    position = getdvar("warlink_message_position");
+    if (!isdefined(position) || position == "") position = getdvar("warlink_message_position");
     if (position == "center")
     {
         self iprintlnbold(text);
@@ -234,6 +240,9 @@ warlink_loadout()
                 level.warlink_sniper_next = (level.warlink_sniper_next + 1) % level.warlink_snipers.size;
             }
             self.warlink_last_sniper = self.warlink_sniper_weapon;
+            base_weapon = self.warlink_sniper_weapon;
+            if (isdefined(level.warlink_sniper_camos) && isdefined(level.warlink_sniper_camos[base_weapon]))
+                self.warlink_sniper_weapon = common_scripts\utility::random(level.warlink_sniper_camos[base_weapon]);
         }
     }
     self disableweaponpickup();
@@ -440,36 +449,27 @@ warlink_moderation()
 
 warlink_build_sniper_catalog()
 {
-    bases = ["h1_barrett", "h1_dragunov", "h1_m21", "h1_m40a3", "h1_remington700", "h1_febsnp", "h1_junsnp"];
-    rows = tablegetrowcount("mp/customweapons.csv");
-    for (i = 0; i < rows; i++)
-    {
-        if (tablelookupbyrow("mp/customweapons.csv", i, 1) != "weapon_sniper") continue;
-        base = tablelookupbyrow("mp/customweapons.csv", i, 0);
-        duplicate = false;
-        foreach (existing in bases) if (existing == base) duplicate = true;
-        if (!duplicate) bases[bases.size] = base;
-    }
+    /* Explicit scopes are preserved when appending camouflages. */
+    weapons = ["h2_cheytac_mp_cheytacscope", "h2_l118a_mp_l118ascope", "h2_barrett_mp_barrettscope", "h2_as50_mp_as50scope", "h2_d25s_mp_d25sscope", "h2_wa2000_mp_wa2000scope", "h2_usr_mp_usrscope", "h2_m21_mp_m21scope", "h2_msr_mp_msrscope", "h2_m40a3_mp_m40a3scope"];
     catalog = [];
-    foreach (base in bases)
+    level.warlink_sniper_camos = [];
+    foreach (weapon in weapons)
     {
-        if (getsubstr(base, 0, 3) == "h1_")
-            weapon = base + "_mp";
-        else
-            weapon = base + "_mp_" + getsubstr(base, 3, base.size) + "scope";
-        if (weaponclass(weapon) != "sniper" && getsubstr(base, 0, 3) == "h1_")
-        {
-            alternatives = [base + "_mp_a#none_f#base", getsubstr(base, 3, base.size) + "_mp"];
-            foreach (alternate in alternatives) if (weaponclass(alternate) == "sniper") { weapon = alternate; break; }
-        }
-        if (weaponclass(weapon) != "sniper")
-        {
-            LogPrint("WARLINK_SNIPER_REJECTED " + base + " " + weapon + "\n");
-            continue;
-        }
+        if (weaponclass(weapon) != "sniper") continue;
         precacheitem(weapon);
         catalog[catalog.size] = weapon;
-        LogPrint("WARLINK_SNIPER_VALIDATED " + base + " " + weapon + "\n");
+        variants = [weapon];
+        for (camo = 1; camo <= 45; camo++)
+        {
+            suffix = "00" + camo;
+            if (camo >= 10) suffix = "0" + camo;
+            painted = weapon + "_camo" + suffix;
+            if (weaponclass(painted) != "sniper") continue;
+            precacheitem(painted);
+            variants[variants.size] = painted;
+        }
+        level.warlink_sniper_camos[weapon] = variants;
+        LogPrint("WARLINK_SCOPED_SNIPER " + weapon + " variants=" + variants.size + "\n");
     }
     if (catalog.size) level.warlink_snipers = catalog;
     level.warlink_sniper_next = 0;
@@ -554,4 +554,52 @@ warlink_xp_observer()
             previous = current;
         }
     }
+}
+
+warlink_live_announcements()
+{
+    level endon("game_ended");
+    setdvar("warlink_live_send", "0");
+    LogPrint("WARLINK_LIVE_ANNOUNCEMENTS_READY\n");
+    for (;;)
+    {
+        wait 0.25;
+        if (!getdvarint("warlink_live_send")) continue;
+        setdvar("warlink_live_send", "0");
+        text = getdvar("warlink_live_text");
+        duration = getdvarint("warlink_live_duration");
+        if (duration < 2) duration = 2;
+        if (duration > 15) duration = 15;
+        if (text == "") continue;
+        foreach (player in level.players)
+        {
+            if (!isBot(player))
+            {
+                player thread warlink_live_banner(text, duration);
+                LogPrint("WARLINK_LIVE_SENT slot=" + player getentitynumber() + " duration=" + duration + "\n");
+            }
+        }
+    }
+}
+
+warlink_live_banner(text, duration)
+{
+    self endon("disconnect");
+    if (isdefined(self.warlink_live_hud)) self.warlink_live_hud destroy();
+    hud = newclienthudelem(self);
+    self.warlink_live_hud = hud;
+    hud.horzalign = "center";
+    hud.vertalign = "middle";
+    hud.alignx = "center";
+    hud.aligny = "middle";
+    hud.x = 0;
+    hud.y = -30;
+    hud.fontscale = 2;
+    hud.alpha = 1;
+    hud.foreground = true;
+    hud.sort = 1000;
+    hud.hidewheninmenu = false;
+    hud settext(text);
+    wait duration;
+    if (isdefined(hud)) hud destroy();
 }

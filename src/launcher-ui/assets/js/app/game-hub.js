@@ -38,7 +38,8 @@
             const running = !!(state && state.isRunning);
             const q = window.DownloadQueueManager;
             const blocked = !!busyKind || !!(q && typeof q.isAnyBlockingActive === 'function' && q.isAnyBlockingActive());
-            return `<button class="game-hub-action" type="button" data-hub-play${running || blocked ? ' disabled' : ''}>${escapeHtml(t(running ? 'hub.running' : 'common.play'))}</button>`;
+            if (running) return `<button class="stop-button game-hub-stop" type="button" data-hub-stop><div class="stop-icon"></div>${escapeHtml(t('common.stop'))}</button>`;
+            return `<button class="game-hub-action" type="button" data-hub-play${blocked ? ' disabled' : ''}>${escapeHtml(t('common.play'))}</button>`;
         }
         return `<button class="game-hub-action" type="button" data-hub-setup${busyKind ? ' disabled' : ''}>${escapeHtml(setupButtonLabel(status, busyKind, id))}</button>`;
     }
@@ -48,6 +49,8 @@
         host.innerHTML = actionHTML(id, status);
         const play = host.querySelector('[data-hub-play]');
         if (play) play.addEventListener('click', () => launchGame(id));
+        const stop = host.querySelector('[data-hub-stop]');
+        if (stop) stop.addEventListener('click', () => stopGame(id));
         const setup = host.querySelector('[data-hub-setup]');
         if (setup) setup.addEventListener('click', () => showSetupFlow(id));
     }

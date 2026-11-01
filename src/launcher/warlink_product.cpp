@@ -8,6 +8,7 @@
 #include <regex>
 #include <utils/flags.hpp>
 #include <array>
+#include <shlobj.h>
 namespace warlink_product {
 namespace {
 std::array<int,3> numbers(const std::string& s){std::smatch m;if(!std::regex_match(s,m,std::regex("([0-9]{1,6})[.]([0-9]{1,6})[.]([0-9]{1,6})")))throw std::runtime_error("Version invalide");return {std::stoi(m[1]),std::stoi(m[2]),std::stoi(m[3])};}
@@ -30,7 +31,7 @@ rapidjson::Document update_status(){
  const auto latest=valid(manifest)?str(manifest,"version"):version;
  rapidjson::Document out;out.SetObject();out.AddMember("verified",verified,out.GetAllocator());out.AddMember("required",numbers(latest)>numbers(version),out.GetAllocator());text(out,"current",version);text(out,"latest",latest);text(out,"downloadUrl",str(manifest,"downloadUrl"));text(out,"notes",str(manifest,"notes"));return out;
 }
-void register_commands(cef::cef_ui& ui){ui.add_command("warlink-update-status",[](const auto&,rapidjson::Document& out){out=update_status();});ui.add_command("warlink-discord-info",[](const auto&,rapidjson::Document& out){
- const auto r=utils::http::get_data("https://discord.com/api/v10/invites/3hrvcWNDPa?with_counts=true",{},{},{},8,0);out.SetObject();if(!r||r->response_code!=200){out.AddMember("ok",false,out.GetAllocator());return;}rapidjson::Document j;if(j.Parse(r->buffer).HasParseError()||!j.IsObject()){out.AddMember("ok",false,out.GetAllocator());return;}auto& a=out.GetAllocator();out.AddMember("ok",true,a);for(const auto* k:{"approximate_member_count","approximate_presence_count"})if(j.HasMember(k)&&j[k].IsNumber())out.AddMember(rapidjson::Value(k,a),rapidjson::Value(j[k],a),a);
+void register_commands(cef::cef_ui& ui){ui.add_command("warlink-team-logo-save",[](const auto& request,rapidjson::Document& out){out.SetObject();try{const auto role=str(request,"role");if(role!="admin"&&role!="staff"&&role!="vip"&&role!="membre")throw std::runtime_error("Logo invalide");PWSTR folder=nullptr;if(FAILED(SHGetKnownFolderPath(FOLDERID_Downloads,0,nullptr,&folder)))throw std::runtime_error("Dossier Téléchargements inaccessible");const std::filesystem::path downloads(folder);CoTaskMemFree(folder);const auto source=utils::properties::get_appdata_path()/"data"/"launcher-ui"/"assets"/"img"/"team"/(role+"-original.png");auto target=downloads/("WARLINK-"+role+".png");for(int n=2;std::filesystem::exists(target);n++)target=downloads/("WARLINK-"+role+"-"+std::to_string(n)+".png");std::filesystem::copy_file(source,target);const auto args=L"/select,\""+target.wstring()+L"\"";ShellExecuteW(nullptr,L"open",L"explorer.exe",args.c_str(),nullptr,SW_SHOWNORMAL);out.AddMember("ok",true,out.GetAllocator());}catch(const std::exception& e){out.AddMember("ok",false,out.GetAllocator());text(out,"error",e.what());}});ui.add_command("warlink-update-status",[](const auto&,rapidjson::Document& out){out=update_status();});ui.add_command("warlink-discord-info",[](const auto&,rapidjson::Document& out){
+ const auto r=utils::http::get_data("https://discord.com/api/v10/invites/eQaeYQgsp7?with_counts=true",{},{},{},8,0);out.SetObject();if(!r||r->response_code!=200){out.AddMember("ok",false,out.GetAllocator());return;}rapidjson::Document j;if(j.Parse(r->buffer).HasParseError()||!j.IsObject()){out.AddMember("ok",false,out.GetAllocator());return;}auto& a=out.GetAllocator();out.AddMember("ok",true,a);for(const auto* k:{"approximate_member_count","approximate_presence_count"})if(j.HasMember(k)&&j[k].IsNumber())out.AddMember(rapidjson::Value(k,a),rapidjson::Value(j[k],a),a);
 });}
 }

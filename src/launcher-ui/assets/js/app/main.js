@@ -205,7 +205,7 @@ function applyReduceMotion(enabled) {
 
 function applyTheme(theme) {
     const root = document.documentElement;
-    if (theme === 'dark' || theme === 'navy' || theme === 'navy-gradient') {
+    if (theme === 'dark' || theme === 'navy' || theme === 'navy-gradient' || theme === 'purple-gradient') {
         root.setAttribute('data-theme', theme);
         root.removeAttribute('data-accent');
     } else {
@@ -318,7 +318,7 @@ async function initialize() {
     if (typeof window.executeCommand === 'function') {
         try {
             const savedTheme = await window.executeCommand('get-property', PROPERTY_KEYS.LAUNCHER.THEME);
-            applyTheme(savedTheme || 'tactical');
+            applyTheme(savedTheme || 'starzismik');
 
             const reduceMotion = await window.executeCommand('get-property', PROPERTY_KEYS.LAUNCHER.REDUCE_MOTION);
             applyReduceMotion(reduceMotion === 'true');
@@ -1572,6 +1572,7 @@ function loadNavigationPage(page) {
 
     // Initialize page-specific functionality
     if (page === 'discord') window.WarlinkProduct.renderDiscord();
+    if (page === 'partners') window.WarlinkProduct.renderPartners();
     if (page === 'settings') {
         initializeSettingsPage();
     } else if (page === 'library') {
@@ -2365,7 +2366,7 @@ async function loadLauncherSettings() {
         const savedTheme = await window.executeCommand('get-property', PROPERTY_KEYS.LAUNCHER.THEME);
         const themeSelect = document.getElementById('theme-select');
         if (themeSelect) {
-            themeSelect.value = savedTheme || 'tactical';
+            themeSelect.value = savedTheme || 'starzismik';
         }
 
         // Load player count mode
@@ -2864,7 +2865,7 @@ async function handleResetAllSettings() {
                     [PROPERTY_KEYS.LAUNCHER.OFFLINE_MODE]: 'false',
                     [PROPERTY_KEYS.LAUNCHER.HIDDEN_GAMES]: '[]',
                     [PROPERTY_KEYS.LAUNCHER.LANGUAGE]: 'en',
-                    [PROPERTY_KEYS.LAUNCHER.THEME]: 'tactical',
+                    [PROPERTY_KEYS.LAUNCHER.THEME]: 'starzismik',
                     [PROPERTY_KEYS.LAUNCHER.GLOBAL_PLAYER_NAME]: '',
                     [PROPERTY_KEYS.LAUNCHER.CDN_CUSTOM_URL]: ''
                 });
@@ -2895,12 +2896,12 @@ async function handleResetAllSettings() {
                 if (window.LauncherI18n) {
                     window.LauncherI18n.setLanguage('en');
                 }
-                applyTheme('tactical');
+                applyTheme('starzismik');
                 applyReduceMotion(false);
                 applyGrayscaleUninstalled(true);
                 applyPlayerCountMode('both');
                 const themeSelect = document.getElementById('theme-select');
-                if (themeSelect) themeSelect.value = 'tactical';
+                if (themeSelect) themeSelect.value = 'starzismik';
                 const playerCountSelect = document.getElementById('player-count-select');
                 if (playerCountSelect) playerCountSelect.value = 'both';
                 if (window.AppViews && typeof window.AppViews.setHiddenGames === 'function') {

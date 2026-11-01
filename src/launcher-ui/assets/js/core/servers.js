@@ -23,7 +23,7 @@
         s1x:       { modes: ['mp'], join: true },
         'iw7-mod': { modes: ['mp'], join: true },
         'h1-mod':  { modes: ['mp'], join: true },
-        'hmw-mod': { modes: ['mp'] }
+        'hmw-mod': { modes: ['mp'], join: true }
     };
 
     const FAVORITES_KEY = 'cb_server_favorites';
@@ -225,6 +225,7 @@
     }
 
     function joinServer(game, server) {
+        if(game==='hmw-mod')return window.executeCommand('hmw-host',{action:'join-remote',endpoint:server.id}).then(r=>({...r,success:!!r?.ok}));
         const separator = server.id.lastIndexOf(':');
         return window.executeCommand('join-server', {
             game: GameUtils.getGameMapping(game),

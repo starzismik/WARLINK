@@ -122,6 +122,11 @@
             page: (options && options.page) || 1
         };
 
+        if(game==='boiii'&&opts.sort==='collection'){
+            const data=await(await fetch('assets/data/bo3-collection.json')).json();
+            const needle=opts.query.trim().toLowerCase();const items=data.items.filter(x=>(opts.kind==='all'||x.kind===opts.kind)&&(!needle||x.title.toLowerCase().includes(needle)));
+            return {items:items.slice((opts.page-1)*24,opts.page*24),total:items.length};
+        }
         if (PREVIEW_MODE && !window.__modsMock.workshopApi) {
             await delay();
             return searchMock(opts);

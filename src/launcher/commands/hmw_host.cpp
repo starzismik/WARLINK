@@ -10,6 +10,11 @@
 #include <utils/flags.hpp>
 #include <utils/http.hpp>
 #include <regex>
+#include <random>
+#include <map>
+#include <set>
+#include <array>
+#include <thread>
 #include <iphlpapi.h>
 #pragma comment(lib, "iphlpapi.lib")
 #pragma comment(lib, "ws2_32.lib")
@@ -33,6 +38,7 @@ namespace hmw_host
         {
             return v.IsObject() && v.HasMember(k) && v[k].IsBool() ? v[k].GetBool() : fallback;
         }
+        std::string& publication_session(){static std::string token;return token;}
         std::filesystem::path root() { return utils::properties::get_appdata_path() / "servers" / "hmw"; }
         std::filesystem::path profile_dir(const std::string& id)
         {
@@ -118,7 +124,15 @@ namespace hmw_host
         {
             std::string cfg = "// WARLINK HorizonMW server - generated configuration\n";
             const auto line = [&cfg](const std::string& k, const std::string& v) { cfg += "set " + k + " \"" + v + "\"\n"; };
-            const auto mode = token(str(p, "mode", "war"));
+            std::vector<std::string> mix;
+            if(str(p,"mode")=="mix" && p.HasMember("mixModes") && p["mixModes"].IsArray())for(const auto& v:p["mixModes"].GetArray()) {
+                if(!v.IsString())throw std::runtime_error("Mode Mix invalide");
+                const auto m=std::string(v.GetString());
+                if(m!="dm"&&m!="war"&&m!="dom"&&m!="sd"&&m!="conf"&&m!="hp"&&m!="koth"&&m!="sab"&&m!="ctf"&&m!="gun")throw std::runtime_error("Mode Mix inconnu");
+                if(std::find(mix.begin(),mix.end(),m)==mix.end())mix.push_back(m);
+            }
+            if(str(p,"mode")=="mix"&&mix.empty())throw std::runtime_error("Sélectionne un mode pour le Mix");
+            const auto mode = mix.empty()?token(str(p,"mode","war")):mix.front();
             const auto access = str(p, "access", "private");
             if(access!="local"&&access!="private"&&access!="public")throw std::runtime_error("Accès invalide");
             if(access=="private"&&str(p,"password").empty())throw std::runtime_error("Définis un mot de passe pour un serveur privé, ou choisis Local/Public");
@@ -134,7 +148,10 @@ namespace hmw_host
             line("warlink_discord",safe_text(str(p,"discord"),160));
             line("warlink_announcement",safe_text(str(p,"announcement"),160));
             line("warlink_announcement_interval",std::to_string(number(p,"announcementInterval",0,0,3600)));
-            line("warlink_welcome_respawn",boolean(p,"welcomeRespawn")?"1":"0");
+            line("warlink_respawn_message",safe_text(str(p,"respawnMessage"),160));
+            const auto respawnPosition=str(p,"respawnPosition",str(p,"messagePosition","left"));
+            if(respawnPosition!="chat"&&respawnPosition!="center"&&respawnPosition!="left")throw std::runtime_error("Position de réapparition invalide");
+            line("warlink_respawn_position",respawnPosition);
             line("g_log","hmw-mod/logs/warlink_" + str(p,"id") + ".log"); line("g_logSync","1");
             line("g_gametype",mode);
             line("scr_"+mode+"_scorelimit",std::to_string(number(p,"scoreLimit",75,0,100000)));
@@ -176,7 +193,8 @@ namespace hmw_host
                 for (const auto& map : p["rotation"].GetArray())
                 {
                     if (!map.IsString() || rotation.size()>6000) throw std::runtime_error("Rotation invalide");
-                    rotation += "gametype " + mode + " map " + token(map.GetString()) + " ";
+                    if(mix.empty()) rotation += "gametype " + mode + " map " + token(map.GetString()) + " ";
+                    else for(const auto& m:mix)rotation += "gametype " + m + " map " + token(map.GetString()) + " ";
                 }
             if (rotation.empty()) rotation = "gametype " + mode + " map mp_rust";
             line("sv_mapRotation",rotation);
@@ -225,6 +243,7 @@ namespace hmw_host
             if(stamp!=str(state,"created")) return close();
             return process;
         }
+        #include "hmw_bot_identities.inc"
         void stage(const rapidjson::Value& p)
         {
             const auto game=game_path(p); const auto id=str(p,"id");
@@ -380,6 +399,30 @@ namespace hmw_host
                 if(!utils::io::write_file(cfg,data))throw std::runtime_error("Enregistrement de la vue impossible");
                 set(out,"message","Échelle de visée remise à 1 ; champ de vision conservé. Sauvegarde créée.",a);
             }
+            else if(action=="auth-start"||action=="auth-poll"||action=="auth-status"||action=="auth-logout")
+            {
+                static std::string session;
+                static std::string transaction;
+                static std::string poll_secret;
+                const auto url=std::string("https://warlink-community-production.up.railway.app")+(action=="auth-start"?"/auth/start":action=="auth-poll"?"/auth/poll":action=="auth-logout"?"/auth/logout":"/auth/me");
+                std::string payload;
+                if(action=="auth-start"||action=="auth-logout")payload="{}";
+                if(action=="auth-poll")payload="{\"transaction\":\""+transaction+"\",\"poll\":\""+poll_secret+"\"}";
+                const auto response=utils::http::get_data(url,payload,{{"Content-Type","application/json"},{"Authorization","Bearer "+session}},{},15,0);
+                if(!response)throw std::runtime_error("Connexion WARLINK indisponible");
+                rapidjson::Document reply;reply.Parse(response->buffer.c_str());
+                if(!reply.IsObject())throw std::runtime_error("Réponse Discord invalide");
+                if(response->response_code!=200){session.clear();throw std::runtime_error(str(reply,"error","Connexion Discord requise"));}
+                if(action=="auth-start"){transaction=str(reply,"transaction");poll_secret=str(reply,"poll");set(out,"authorizationUrl",str(reply,"authorizationUrl"),a);}
+                if(action=="auth-poll"&&str(reply,"status")=="complete"){
+                    if(!boolean(reply,"authorized"))throw std::runtime_error(str(reply,"error","Rôle Discord requis"));
+                    session=str(reply,"token");set(out,"displayName",str(reply,"displayName"),a);out.AddMember("authorized",true,a);
+                    publication_session()=session;transaction.clear();poll_secret.clear();
+                }
+                if(action=="auth-status"){set(out,"displayName",str(reply,"displayName"),a);out.AddMember("authorized",true,a);}
+                if(action=="auth-logout"){session.clear();publication_session().clear();}
+                set(out,"status",str(reply,"status"),a);
+            }
             else if(action=="list")
             {
                 rapidjson::Value profiles(rapidjson::kArrayType),maps(rapidjson::kArrayType);
@@ -456,8 +499,29 @@ namespace hmw_host
                 else
                 {
                     if(!p.HasMember("id"))throw std::runtime_error("Profil serveur introuvable");
-                    if(action=="publish"||action=="unpublish")
+                    if(action=="bot-identities" || action=="bot-identities-save" || action=="bot-identities-shuffle" || action=="bot-identity-set") {
+                        auto settings=read_json(dir/"bot-identities.json");
+                        if(action=="bot-identities-save") {
+                            if(!request.HasMember("settings")||!request["settings"].IsObject())throw std::runtime_error("Listes manquantes");
+                            settings.CopyFrom(request["settings"],settings.GetAllocator());
+                            identity_list(settings,"tags",8);identity_list(settings,"names",20);
+                            write_json(dir/"bot-identities.json",settings);
+                        }
+                        if(action=="bot-identity-set") {
+                            bot_memory memory(id,p);if(!memory.h)throw std::runtime_error("Démarre le serveur");
+                            const auto slot=number(request,"slot",0,0,17);const auto expected=str(request,"expected");const auto tag=identity_text(str(request,"tag"),8,true),name=identity_text(str(request,"name"),20);
+                            const auto bots=native_bots(memory);const auto found=std::find_if(bots.begin(),bots.end(),[&](const auto& b){return b.slot==slot&&b.name==expected;});
+                            if(found==bots.end())throw std::runtime_error("Le bot a changé, actualise la liste");
+                            const auto value=(tag.empty()?"":"["+tag+"]")+name;rename_native_bot(memory,*found,value);bot_identity_cache[bot_cache_key(id,memory.pid,slot)]=value;
+                        }
+                        if(action=="bot-identities-shuffle" || action=="bot-identities-save")sync_bot_identities(id,p,settings,action=="bot-identities-shuffle");
+                        out.AddMember("settings",rapidjson::Value(settings,a),a);rapidjson::Value bots(rapidjson::kArrayType);bot_memory memory(id,p);
+                        for(const auto& bot:native_bots(memory)){rapidjson::Value item(rapidjson::kObjectType);const auto parts=split_bot_name(bot.name);set(item,"slot",bot.slot,a);set(item,"identity",bot.name,a);set(item,"tag",parts.first,a);set(item,"name",parts.second,a);bots.PushBack(item,a);}out.AddMember("bots",bots,a);set(out,"message","Identités enregistrées et synchronisées.",a);
+                    }
+                    else if(action=="publish"||action=="unpublish"||action=="update-author")
                     {
+                        if((action=="publish"||action=="update-author") && request.HasMember("author")){set(p,"author",safe_text(str(request,"author"),48),p.GetAllocator());const auto color=str(request,"authorColor","#95eb35");if(!std::regex_match(color,std::regex("#[a-fA-F0-9]{6}")))throw std::runtime_error("Couleur invalide");set(p,"authorColor",color,p.GetAllocator());write_json(dir/"profile.json",p);}
+
                         const auto settings=dir/"directory-owner.json";auto owner=read_json(settings);std::string key=utils::string::to_lower(str(owner,"token"));
                         if(key.empty()){key=utils::string::to_lower(utils::cryptography::sha256::compute(secret(),true));set(owner,"token",key,owner.GetAllocator());write_json(settings,owner);}
                         const auto port=number(p,"port",27017,1024,65535);const auto motd=safe_text(str(p,"motd","Bienvenue sur WARLINK"));
@@ -468,8 +532,10 @@ namespace hmw_host
                             udp(port,"rcon "+str(p,"rconPassword")+" set sv_motd \"[WL:"+proof+"]\"");
                             std::this_thread::sleep_for(std::chrono::milliseconds(1300));
                         }
-                        const std::string payload="{\"port\":"+std::to_string(port)+",\"token\":\""+key+"\"}";
-                        const auto result=utils::http::get_data("https://warlink-community-production.up.railway.app/v1/"+(action=="publish"?std::string("publish"):std::string("unpublish")),payload,{{"Content-Type","application/json"}},{},12,0);
+                        rapidjson::Document publication;publication.SetObject();auto& pa=publication.GetAllocator();
+                        set(publication,"port",port,pa);set(publication,"token",key,pa);set(publication,"author",safe_text(str(p,"author"),48),pa);set(publication,"authorColor",str(p,"authorColor","#95eb35"),pa);
+                        rapidjson::StringBuffer pb;rapidjson::Writer<rapidjson::StringBuffer> pw(pb);publication.Accept(pw);const std::string payload=pb.GetString();
+                        const auto result=utils::http::get_data("https://warlink-community-production.up.railway.app/v1/"+(action=="publish"?std::string("publish"):action=="update-author"?std::string("author"):std::string("unpublish")),payload,{{"Content-Type","application/json"},{"Authorization","Bearer "+publication_session()}},{},12,0);
                         if(action=="publish")udp(port,"rcon "+str(p,"rconPassword")+" set sv_motd \""+motd+"\"");
                         if(!result)throw std::runtime_error("Annuaire WARLINK inaccessible");
                         rapidjson::Document reply;if(reply.Parse(result->buffer).HasParseError()||!reply.IsObject())throw std::runtime_error("Réponse annuaire invalide");
@@ -644,6 +710,16 @@ namespace hmw_host
     }
     void register_commands(cef::cef_ui& ui)
     {
+        static std::jthread identity_watcher([](std::stop_token stop){
+            while(!stop.stop_requested()) {
+                for(int i=0;i<20&&!stop.stop_requested();i++)std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                if(stop.stop_requested())break;
+                try {std::lock_guard lock(mutex);if(std::filesystem::exists(root()))for(const auto& entry:std::filesystem::directory_iterator(root())) {
+                    if(!entry.is_directory())continue;const auto id=entry.path().filename().string();
+                    try {const auto settings=read_json(entry.path()/"bot-identities.json");if(!boolean(settings,"enabled"))continue;const auto profile=read_json(entry.path()/"profile.json");sync_bot_identities(id,profile,settings);}catch(...){}
+                }}catch(...){}
+            }
+        });
         ui.add_command("hmw-host",[](const rapidjson::Value& request,rapidjson::Document& response){response=execute(request);});
     }
     int run_tool(const std::string& file)

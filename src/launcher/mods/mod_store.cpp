@@ -749,6 +749,8 @@ namespace mods
             {
                 const auto dirname = utils::string::path_to_utf8(directory.filename());
                 const auto id = make_id(folder.name, dirname);
+                // BO3 development projects belong to Mod Tools, not the installed catalogue.
+                if(config.game_key=="bo3" && (std::filesystem::exists(directory/"scripts") || std::filesystem::exists(directory/"zone_source") || std::filesystem::exists(directory/"map_source") || (!is_workshop_id(dirname) && !std::filesystem::exists(directory/"workshop.json")))) continue;
                 const auto stats = scan_directory(directory);
 
                 installed_mod mod{};

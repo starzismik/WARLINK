@@ -191,6 +191,13 @@
         const sub = document.getElementById('hub-hero-sub');
         const cta = document.getElementById('hub-hero-play');
 
+        if(hero){
+            const welcome=config.uiId==='warlink-welcome';hero.classList.toggle('is-warlink-welcome',welcome);
+            if(welcome){
+                if(!hero.querySelector('.warlink-hero-welcome'))hero.insertAdjacentHTML('beforeend','<div class="warlink-hero-welcome"><svg viewBox="0 0 256 120" role="img" aria-label="WARLINK"><g fill="currentColor"><path d="M22 20H80L94 38L80 56H51Z"/><path d="M109 20H139L154 38L109 92H80L109 56L94 38Z"/><path d="M168 20H228L168 92H139L168 56L154 38Z"/></g></svg><span>BIENVENUE</span></div>');
+                hero.style.setProperty('--hero-image','none');hero.style.backgroundImage='none';hero.dataset.game='warlink-welcome';hero.onclick=null;return;
+            }
+        }
         if (hero) {
             hero.classList.remove('is-changing');
             void hero.offsetWidth;
@@ -323,6 +330,8 @@
                 status: 'not-setup'
             }));
         }
+
+        homeHeroStates.unshift({config:{uiId:'warlink-welcome',displayName:'WARLINK'},status:'welcome'});
 
         if (homeHeroSlideIndex >= homeHeroStates.length) {
             homeHeroSlideIndex = 0;

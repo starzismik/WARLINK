@@ -53,7 +53,7 @@
     <div id="warlink-startup" role="status" aria-live="polite"><div class="warlink-startup-inner"><img class="warlink-startup-logo" src="./assets/img/brand/warlink-w.svg" alt="WARLINK"><strong>WARLINK</strong><div class="warlink-startup-track" role="progressbar" aria-label="Démarrage de WARLINK"><div class="warlink-startup-bar"></div></div><p>Démarrage de l’application en cours…</p></div></div>
     <div class="window">
         <div class="title-bar">
-            <span class="title-text"><span class="warlink-title-arrow" aria-hidden="true"></span><span class="title-name">WARLINK</span><span class="title-author">par STARZISMIK</span><span class="title-version">1.0.0</span></span>
+            <span class="title-text"><span class="warlink-title-arrow" aria-hidden="true"></span><span class="title-name">WARLINK</span></span>
             <div class="window-controls">
                 <button class="control-btn" id="minimize-button" data-i18n-title="window.minimize" title="Minimize"><span class="control-icon minimize-icon"></span></button>
                 <button class="control-btn" id="maximize-button" data-i18n-title="window.maximize" title="Maximize"><span class="control-icon maximize-icon"></span></button>
@@ -100,7 +100,7 @@
                         <span class="nav-label" data-i18n="nav.community">Community</span>
                         <span class="nav-badge" id="community-badge" style="display:none;">0</span>
                     </div>
-                    <div class="nav-item" id="discord"><div class="nav-icon warlink-discord-icon"></div><span class="nav-label">Discord</span></div>
+                    <div class="nav-item" id="discord"><div class="nav-icon warlink-discord-icon"></div><span class="nav-label">Discord</span></div><div class="nav-item" id="partners"><div class="nav-icon warlink-heart-icon"></div><span class="nav-label">Partenaires</span></div>
                     <div class="nav-item" id="moderation" style="display:none;">
                         <div class="nav-icon settings-icon"></div>
                         <span class="nav-label" data-i18n="nav.moderation">Moderation</span>
@@ -135,7 +135,7 @@
                     <div class="game-item" id="hmw-mod" data-game="hmw-mod" style="display:none"></div>
                 </div>
 
-                <div class="sidebar-bottom">
+                <div class="sidebar-bottom"><span class="warlink-sidebar-version" aria-label="Version 1.0.0"><span>1.</span><span>0.</span><span>0</span></span>
                     <div class="warlink-tricolor" role="img" aria-label="Bleu blanc rouge"><span>▰</span><span>▰</span><span>▰</span></div>
                     <div class="nav-item" id="settings">
                         <div class="nav-icon settings-icon"></div>
@@ -272,7 +272,7 @@
                     <div id="community-body"></div>
                 </div>
 
-                <div class="page-section" id="discord-page" style="display:none"><div class="warlink-discord-host"></div></div>
+                <div class="page-section" id="partners-page" style="display:none"><div class="warlink-partners-host"></div></div><div class="page-section" id="discord-page" style="display:none"><div class="warlink-discord-host"></div></div>
                 <div class="page-section" id="support-page" style="display: none;">
                     <div class="page-header">
                         <div class="page-title" data-i18n="support.title">Support</div>
@@ -283,7 +283,7 @@
                             <h2 data-i18n="support.communityTitle">Community support</h2>
                             <p data-i18n="support.communityBody">Hop into the Discord, the fastest place to get help with launcher setup, client installs and server access.</p>
                             <div class="support-actions">
-                                <a class="support-action discord" href="https://discord.gg/3hrvcWNDPa" target="_blank">
+                                <a class="support-action discord" href="https://discord.gg/eQaeYQgsp7" target="_blank">
                                     <span data-i18n="support.discordServer">Discord Server</span>
                                     <span class="discord-online" id="discord-online" hidden></span>
                                 </a>
@@ -310,8 +310,6 @@
                     <div class="support-footer">
                         <span data-i18n="support.noteBody">This launcher is not affiliated with IW4x, Plutonium, AlterWare, Aurora, HorizonMW, CoD4x Project, IW3SP-Mod, CoDExtended, T6SP-Mod, H2-Mod, or Project BO4. WARLINK is developed and maintained by STARZISMIK.</span>
                         <div class="support-footer-links">
-                            <a href="#" onclick="window.showMessageBox('Support WARLINK', 'WARLINK est développé et maintenu par STARZISMIK. Pour signaler un problème, transmets-lui une description et une capture.', ['OK']); return false;" data-i18n="support.reportBug">Report a bug</a>
-                            <a href="https://github.com/CBServers/cb-launcher" target="_blank" data-i18n="support.github">Code source d’origine (GPL)</a>
                         </div>
                     </div>
                 </div>
@@ -369,13 +367,12 @@
                                     <span class="setting-description" data-i18n="settings.themeBody">Switch between the launcher's available color themes.</span>
                                 </div>
                                 <div class="cdn-control">
-                                    <select class="cdn-select" id="theme-select">
+                                    <select class="cdn-select" id="theme-select"><option value="starzismik">STARZISMIK</option>
                                         <option value="tactical" data-i18n="settings.themeTactical">Tactical Black Ops</option>
                                         <option value="tactical-mw" data-i18n="settings.themeTacticalMw">Tactical Modern Warfare</option>
-                                        <option value="starzismik">STARZISMIK</option>
                                         <option value="dark" data-i18n="settings.themeDark">Dark</option>
                                         <option value="navy" data-i18n="settings.themeNavy">Navy Dark</option>
-                                        <option value="navy-gradient" data-i18n="settings.themeNavyGradient">Navy Gradient</option>
+                                        <option value="navy-gradient" data-i18n="settings.themeNavyGradient">Navy Gradient</option><option value="purple-gradient" data-i18n="settings.themePurpleGradient">Dégradé Purple</option>
                                     </select>
                                 </div>
                             </div>
@@ -641,6 +638,8 @@
 
     <div id="dm-dock"></div>
     <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
+<script src="./assets/js/app/warlink-select.js"></script>
+<script src="assets/js/app/warlink-docs.js"></script>
 </body>
 
 </html>
