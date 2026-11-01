@@ -10,7 +10,7 @@ init()
 {
     if (!getdvarint("dedicated") || !getdvarint("warlink_managed_server"))
         return;
-    precacheitem("remington700_mp");
+    precacheitem("h2_l118a_mp_l118ascope");
     LogPrint("WARLINK_BOTS_READY\n");
     level thread warlink_manage_bots();
     level thread warlink_connections();
@@ -72,6 +72,16 @@ warlink_manage_bots()
                 bot thread warlink_loadout_spawns();
             }
             bot warlink_loadout();
+        }
+        if (getdvarint("warlink_bot_inspect"))
+        {
+            setdvar("warlink_bot_inspect", "0");
+            foreach (bot in bots)
+            {
+                if (bot.sessionstate != "playing") continue;
+                held = bot getcurrentweapon();
+                LogPrint("WARLINK_BOT_WEAPON slot=" + bot getentitynumber() + " held=" + held + " ammo=" + bot getcurrentweaponclipammo() + "\n");
+            }
         }
         if (getdvarint("warlink_bot_balance")) warlink_balance_bots();
         wait 2;
@@ -184,7 +194,10 @@ warlink_loadout()
     if (self.sessionstate != "playing") return;
     mode = getdvar("warlink_bot_weapons");
     if (mode == "") mode = "mixed";
-    if (isdefined(self.warlink_weapon_mode) && self.warlink_weapon_mode == mode) return;
+    if (isdefined(self.warlink_weapon_mode) && self.warlink_weapon_mode == mode)
+    {
+        if (mode != "sniper" || (self hasweapon("h2_l118a_mp_l118ascope") && self getcurrentweapon() == "h2_l118a_mp_l118ascope")) return;
+    }
     previous = self.warlink_weapon_mode;
     self.warlink_weapon_mode = mode;
     self enableweapons();
@@ -205,17 +218,18 @@ warlink_loadout()
     }
     else
     {
-        self giveweapon("remington700_mp");
-        self switchtoweaponimmediate("remington700_mp");
+        self giveweapon("h2_l118a_mp_l118ascope");
+        self switchtoweaponimmediate("h2_l118a_mp_l118ascope");
         self disableweaponswitch();
-        if (mode == "sniper") self givemaxammo("remington700_mp");
+        if (mode == "sniper") self givemaxammo("h2_l118a_mp_l118ascope");
         else
         {
-            self setweaponammoclip("remington700_mp", 0);
-            self setweaponammostock("remington700_mp", 0);
+            self setweaponammoclip("h2_l118a_mp_l118ascope", 0);
+            self setweaponammostock("h2_l118a_mp_l118ascope", 0);
         }
     }
-    LogPrint("WARLINK_LOADOUT_APPLIED " + mode + "\n");
+    held = self getcurrentweapon();
+    LogPrint("WARLINK_LOADOUT_APPLIED " + mode + " held=" + held + " has_sniper=" + self hasweapon("h2_l118a_mp_l118ascope") + "\n");
 }
 
 warlink_balance_bots()
