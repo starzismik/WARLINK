@@ -1,5 +1,6 @@
 #include "std_include.hpp"
 #include "hmw_host.hpp"
+#include "hmw_compatibility.hpp"
 #include "cef/cef_ui.hpp"
 #include "game_config.hpp"
 #include <utils/properties.hpp>
@@ -15,6 +16,7 @@
 #include <set>
 #include <array>
 #include <thread>
+#include <future>
 #include <iphlpapi.h>
 #pragma comment(lib, "iphlpapi.lib")
 #pragma comment(lib, "ws2_32.lib")
@@ -38,6 +40,9 @@ namespace hmw_host
         {
             return v.IsObject() && v.HasMember(k) && v[k].IsBool() ? v[k].GetBool() : fallback;
         }
+        std::string account_id, account_name;
+        ULONGLONG account_expires=0;
+        bool signed_in(){return !account_id.empty() && GetTickCount64()<account_expires;}
         std::string& publication_session(){static std::string token;return token;}
         std::filesystem::path root() { return utils::properties::get_appdata_path() / "servers" / "hmw"; }
         std::filesystem::path profile_dir(const std::string& id)
@@ -282,6 +287,7 @@ namespace hmw_host
             if(check==INVALID_SOCKET || bind(check,reinterpret_cast<sockaddr*>(&addr),sizeof(addr))!=0)
             { if(check!=INVALID_SOCKET)closesocket(check); throw std::runtime_error("Ce port UDP est déjà utilisé"); }
             closesocket(check);
+            hmw_compatibility::require_compatible(game_path(p));
             stage(p);
             const auto game=game_path(p); const auto exe=server_exe(p).wstring();
             std::wstring command=L"\""+exe+L"\" \""+game.wstring()+L"\" -dedicated -memoryfix +set net_port "+std::to_wstring(port)+
@@ -300,6 +306,7 @@ namespace hmw_host
         }
         void launch_client(const std::filesystem::path& game, const std::string& endpoint, const std::string& pass)
         {
+            hmw_compatibility::require_compatible(game);
             const auto exe=game/"hmw-mod.exe";
             std::wstring cmd=L"\""+exe.wstring()+L"\" \""+game.wstring()+L"\" -memoryfix +set password \""+utils::string::convert(pass)+L"\" +connect "+utils::string::convert(endpoint);
             const auto logs=utils::properties::get_appdata_path()/"logs";std::filesystem::create_directories(logs);
@@ -338,7 +345,9 @@ namespace hmw_host
         try
         {
             const auto action=str(request,"action","list");
-            if(action=="network-info")
+            if(action=="account-status"){out.AddMember("authenticated",signed_in(),a);set(out,"displayName",signed_in()?account_name:"",a);}
+            else if(action=="template"){if(!signed_in())throw std::runtime_error("Connecte ton compte Discord");auto t=read_json(utils::nt::library{}.get_folder()/"warlink"/"data"/"server-assets"/"hmw-template.json");set(t,"author",account_name,t.GetAllocator());out.AddMember("profile",rapidjson::Value(t,a),a);}
+            else if(action=="network-info")
             {
                 ULONG size=16384;std::vector<unsigned char> buffer(size);
                 auto* adapters=reinterpret_cast<IP_ADAPTER_INFO*>(buffer.data());
@@ -351,6 +360,18 @@ namespace hmw_host
                     for(auto* item=&adapter->IpAddressList;item;item=item->Next){const std::string ip=item->IpAddress.String;if(ip=="0.0.0.0"||ip.starts_with("127.")||ip.starts_with("169.254."))continue;rapidjson::Value row(rapidjson::kObjectType);set(row,"ipv4",ip,a);set(row,"gateway",gateway,a);interfaces.PushBack(row,a);}
                 }
                 out.AddMember("interfaces",interfaces,a);
+            }
+            else if(action=="language-check" || action=="language-repair")
+            {
+                const auto game=game_path(request);
+                if(action=="language-repair") {
+                    if(utils::nt::is_process_running("hmw-mod.exe"))throw std::runtime_error("Ferme HorizonMW avant de changer sa langue. Le serveur dédié peut rester ouvert ; sa nouvelle langue sera utilisée au prochain démarrage.");
+                    hmw_compatibility::use_english(game);
+                }
+                const auto report=hmw_compatibility::scan(game,{},true),english=hmw_compatibility::scan(game,"english",true);
+                set(out,"language",report.language,a);set(out,"checked",report.checked,a);
+                out.AddMember("compatible",report.missing.empty(),a);out.AddMember("englishAvailable",english.missing.empty(),a);
+                rapidjson::Value missing(rapidjson::kArrayType);for(const auto& file:report.missing)missing.PushBack(rapidjson::Value(file.c_str(),a),a);out.AddMember("missing",missing,a);
             }
             else if(action=="community-list")
             {
@@ -412,44 +433,28 @@ namespace hmw_host
                 if(!response)throw std::runtime_error("Connexion WARLINK indisponible");
                 rapidjson::Document reply;reply.Parse(response->buffer.c_str());
                 if(!reply.IsObject())throw std::runtime_error("Réponse Discord invalide");
-                if(response->response_code!=200){session.clear();throw std::runtime_error(str(reply,"error","Connexion Discord requise"));}
+                if(response->response_code!=200){account_id.clear();account_name.clear();publication_session().clear();session.clear();throw std::runtime_error(str(reply,"error","Connexion Discord requise"));}
                 if(action=="auth-start"){transaction=str(reply,"transaction");poll_secret=str(reply,"poll");set(out,"authorizationUrl",str(reply,"authorizationUrl"),a);}
                 if(action=="auth-poll"&&str(reply,"status")=="complete"){
                     if(!boolean(reply,"authorized"))throw std::runtime_error(str(reply,"error","Rôle Discord requis"));
                     session=str(reply,"token");set(out,"displayName",str(reply,"displayName"),a);out.AddMember("authorized",true,a);
-                    publication_session()=session;transaction.clear();poll_secret.clear();
+                    publication_session()=session;account_id=str(reply,"userId");account_name=str(reply,"displayName");account_expires=GetTickCount64()+28800000;transaction.clear();poll_secret.clear();
                 }
                 if(action=="auth-status"){set(out,"displayName",str(reply,"displayName"),a);out.AddMember("authorized",true,a);}
-                if(action=="auth-logout"){session.clear();publication_session().clear();}
+                if(action=="auth-logout"){account_id.clear();account_name.clear();session.clear();publication_session().clear();}
                 set(out,"status",str(reply,"status"),a);
             }
             else if(action=="list")
             {
                 rapidjson::Value profiles(rapidjson::kArrayType),maps(rapidjson::kArrayType);
                 std::filesystem::create_directories(root());
-                bool has_profiles=false;
-                for(const auto& item:std::filesystem::directory_iterator(root()))
-                    if(item.is_directory()&&utils::io::file_exists(item.path()/"profile.json"))has_profiles=true;
-                if(!has_profiles)
-                {
-                    for(const auto* id:{"entrainement","duel"})
-                    {
-                        const bool training=std::string(id)=="entrainement";
-                        rapidjson::Document p;p.SetObject();auto& pa=p.GetAllocator();
-                        set(p,"id",id,pa);set(p,"name",training?"STARZISMIK · Bots":"STARZISMIK · 1v1 privé",pa);
-                        set(p,"gamePath","",pa);set(p,"port",training?27017:27018,pa);
-                        set(p,"access",training?"local":"private",pa);set(p,"password",training?"":secret().substr(0,10),pa);
-                        set(p,"mode",training?"war":"dm",pa);set(p,"players",training?12:2,pa);set(p,"bots",training?9:0,pa);
-                        set(p,"difficulty","regular",pa);set(p,"scoreLimit",training?75:20,pa);set(p,"timeLimit",10,pa);
-                        rapidjson::Value rotation(rapidjson::kArrayType);rotation.PushBack(rapidjson::Value("mp_rust",pa),pa);
-                        if(training)rotation.PushBack(rapidjson::Value("mp_terminal",pa),pa);
-                        p.AddMember("rotation",rotation,pa);write_json(profile_dir(id)/"profile.json",p);
-                    }
-                }
+                if(!signed_in()){out.AddMember("loginRequired",true,a);out.AddMember("profiles",profiles,a);out.AddMember("maps",maps,a);set(out,"gamePath","",a);out.AddMember("ok",true,a);return out;}
+                set(out,"displayName",account_name,a);
                 for(const auto& item:std::filesystem::directory_iterator(root()))
                 {
                     if(!item.is_directory() || !utils::io::file_exists(item.path()/"profile.json"))continue;
                     auto p=read_json(item.path()/"profile.json");
+                    if(str(read_json(item.path()/"account-owner.json"),"discordId")!=account_id)continue;
                     if(const auto process=owned_process(item.path().filename().string(),p)){p.AddMember("running",true,p.GetAllocator());CloseHandle(process);}else p.AddMember("running",false,p.GetAllocator());
                     const bool running=p["running"].GetBool();
                     const auto info=running?udp(number(p,"port",27017,1024,65535),"getinfo warlink",160):std::string{};
@@ -478,7 +483,10 @@ namespace hmw_host
             }
             else
             {
+                if(!signed_in())throw std::runtime_error("Connecte ton compte Discord pour gérer tes serveurs");
                 const auto id=str(request,"id");const auto dir=profile_dir(id);
+                const bool exists=utils::io::file_exists(dir/"profile.json");
+                if(exists && str(read_json(dir/"account-owner.json"),"discordId")!=account_id)throw std::runtime_error("Ce serveur appartient à un autre compte Discord");
                 auto p=read_json(dir/"profile.json");
                 if(action=="save")
                 {
@@ -494,7 +502,9 @@ namespace hmw_host
                     if(str(p,"rconPassword").find_first_of(" \t")!=std::string::npos)throw std::runtime_error("Le mot de passe RCON ne doit pas contenir d'espace");
                     set(p,"bots",std::min(number(p,"bots",0,0,17),number(p,"players",18,2,18)-1),p.GetAllocator());
                     number(p,"port",27017,1024,65535);make_config(p);
-                    std::filesystem::create_directories(dir);write_json(dir/"profile.json",p);
+                    std::filesystem::create_directories(dir);
+                    if(!exists){rapidjson::Document owner;owner.SetObject();set(owner,"discordId",account_id,owner.GetAllocator());write_json(dir/"account-owner.json",owner);}
+                    write_json(dir/"profile.json",p);
                 }
                 else
                 {
@@ -720,7 +730,20 @@ namespace hmw_host
                 }}catch(...){}
             }
         });
-        ui.add_command("hmw-host",[](const rapidjson::Value& request,rapidjson::Document& response){response=execute(request);});
+        ui.add_command("hmw-host",[](const rapidjson::Value& request,rapidjson::Document& response){
+ static std::map<unsigned,std::future<rapidjson::Document>> jobs; static unsigned sequence=0; static std::mutex jobs_mutex;
+ std::lock_guard guard(jobs_mutex); auto& a=response.GetAllocator();
+ if(str(request,"action")=="job-result") {
+ const auto ticket=number(request,"ticket",0,0,2147483647);auto job=jobs.find(ticket);
+ if(job==jobs.end()){response.AddMember("ok",false,a);set(response,"error","Requête expirée",a);return;}
+ if(job->second.wait_for(std::chrono::seconds(0))==std::future_status::ready){response=job->second.get();jobs.erase(job);return;}
+ response.AddMember("pending",true,a);response.AddMember("ticket",ticket,a);return;
+ }
+ if(jobs.size()>=32){response.AddMember("ok",false,a);set(response,"error","Trop de requêtes en cours",a);return;}
+ rapidjson::Document copy;copy.CopyFrom(request,copy.GetAllocator());auto ticket=++sequence;
+ jobs.emplace(ticket,std::async(std::launch::async,[data=std::move(copy)]()mutable{return execute(data);}));
+ response.AddMember("pending",true,a);response.AddMember("ticket",ticket,a);
+ });
     }
     int run_tool(const std::string& file)
     {

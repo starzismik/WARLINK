@@ -130,8 +130,8 @@ function mockCommand(command, data) {
             };
         case 'get-version':
             return {
-                version: '1.0.1',
-                versionFile: '1.0.1.0',
+                version: '1.0.2',
+                versionFile: '1.0.2.0',
                 gitHash: '00000000',
                 gitBranch: 'preview'
             };
@@ -481,4 +481,11 @@ window.executeCommand = function(command, data) {
         }
         throw error;
     });
+};
+
+const executeNativeCommand = window.executeCommand;
+window.executeCommand = async function(command,data){
+ let result=await executeNativeCommand(command,data);
+ while(command==='hmw-host' && result?.pending){await new Promise(r=>setTimeout(r,100));result=await executeNativeCommand(command,{action:'job-result',ticket:result.ticket});}
+ return result;
 };

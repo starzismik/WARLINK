@@ -154,3 +154,19 @@ html[data-accent="starzismik"] .hmw-state.is-active,html[data-accent="starzismik
 @media(max-width:600px){.warlink-discord-bottom{grid-template-columns:1fr;gap:20px;padding:22px!important}.warlink-discord-bottom [data-warlink-copy-invite]{grid-column:1;grid-row:2;justify-self:start}.warlink-discord-bottom .warlink-discord-games{grid-row:3}}
 
 .warlink-discord-hero .warlink-discord-copy-icon{display:inline-flex;vertical-align:middle;align-items:center;justify-content:center;width:40px;height:40px;min-height:40px;padding:10px;margin-left:12px;border-radius:0;background:#242829;border:1px solid #454c4f;color:#dce2e5;box-sizing:border-box}.warlink-discord-hero .warlink-discord-join{vertical-align:middle}.warlink-discord-hero .warlink-discord-copy-icon:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+
+/* Empty and unreachable community directory states. */
+.warlink-directory-state{display:flex;align-items:center;gap:20px;min-height:104px;box-sizing:border-box;padding:24px 26px;border:1px solid var(--border-color,#303435);background:var(--bg-card,#171a1b);clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px))}
+.warlink-directory-state .warlink-directory-symbol{display:flex;align-items:center;justify-content:center;flex:0 0 36px;color:var(--text-muted,#8d969c);font-size:26px}.warlink-directory-symbol svg{width:30px;height:30px}
+.warlink-directory-state strong{display:block;font-size:14px;line-height:1.5;color:var(--text-primary,#e4e7e9)}.hmw-owned-servers .warlink-directory-state p{margin:7px 0 0;line-height:1.6;font-size:12px}.warlink-directory-state .mods-btn{margin-left:auto;flex-shrink:0;min-height:36px}.hmw-community-head button[hidden]{display:none!important}
+@media(max-width:700px){.warlink-directory-state{flex-wrap:wrap;padding:20px;gap:16px}.warlink-directory-state .mods-btn{margin-left:56px}}
+
+/* Discord sign-in gate, centered in the personal server area. */
+.warlink-account-gate{display:grid;place-items:center;min-height:420px;padding:44px 24px;box-sizing:border-box;border-top:1px solid var(--border,#303435);margin-top:14px}
+.warlink-account-content{max-width:560px;text-align:center}.warlink-account-content>.warlink-discord-icon{display:block;width:54px;height:42px;margin:0 auto 24px;color:var(--text,#e5e8ea)}
+.warlink-account-content>small{display:block;color:var(--accent);font:10px/1.6 var(--font-mono,monospace);letter-spacing:2px}
+.warlink-account-content h2{font:700 24px/1.3 var(--font-display,sans-serif);color:var(--text,#eee);margin:14px 0 16px}
+.hmw-owned-servers .warlink-account-content>p{margin:0;font-size:13px;line-height:1.9;color:var(--text-muted)}
+.warlink-account-content .mods-btn{display:inline-flex;align-items:center;justify-content:center;gap:12px;margin:28px 0 18px;min-height:42px;padding:12px 20px;border-radius:0}.warlink-account-content .mods-btn .warlink-discord-icon{display:block;width:19px;height:16px}
+.hmw-owned-servers .warlink-account-content .warlink-account-feedback{min-height:38px;max-width:480px;font-size:11px;line-height:1.7;margin:0 auto}.warlink-account-content .mods-btn:disabled{cursor:wait;opacity:.55}
+@media(max-width:650px){.warlink-account-gate{min-height:340px;padding:32px 16px}.warlink-account-content h2{font-size:21px}}

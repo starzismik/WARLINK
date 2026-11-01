@@ -1,5 +1,6 @@
 #include "std_include.hpp"
 #include "game_commands.hpp"
+#include "hmw_compatibility.hpp"
 #include <utils/property_keys.hpp>
 #include "cef/cef_ui.hpp"
 
@@ -684,6 +685,7 @@ namespace commands::game_commands
             }
 
             const auto game_directory = *game_install;
+            if(config.game_key=="hmw") {try {hmw_compatibility::require_compatible(game_directory);}catch(const std::exception& e){cef_ui.show_message_box("HorizonMW · Cartes et langues",e.what());return false;}}
 
             // Match the live layout to this mode's selected client before any exe check.
             try

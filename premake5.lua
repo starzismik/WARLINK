@@ -197,17 +197,17 @@ newaction {
             versionHeader:write([=[
 // WARLINK release; upstream Git metadata retained.
 #undef VERSION
-#define VERSION "1.0.0"
+#define VERSION "1.0.2"
 #undef SHORTVERSION
-#define SHORTVERSION "1.0.0"
+#define SHORTVERSION "1.0.2"
 #undef VERSION_PRODUCT_RC
-#define VERSION_PRODUCT_RC 1,0,0
+#define VERSION_PRODUCT_RC 1,0,2
 #undef VERSION_FILE_RC
-#define VERSION_FILE_RC 1,0,0,0
+#define VERSION_FILE_RC 1,0,2,0
 #undef VERSION_PRODUCT
-#define VERSION_PRODUCT "1.0.0"
+#define VERSION_PRODUCT "1.0.2"
 #undef VERSION_FILE
-#define VERSION_FILE "1.0.0.0"
+#define VERSION_FILE "1.0.2.0"
 ]=])
             versionHeader:close()
             local versionHeader = assert(io.open(wks.location .. "/src/version.hpp", "w"))
