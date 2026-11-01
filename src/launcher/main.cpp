@@ -6,6 +6,7 @@
 #include "warlink_product.hpp"
 #include "deep_link.hpp"
 #include "discord/avatar_cache.hpp"
+#include "discord/launcher_presence.hpp"
 #include "discord/discord_service.hpp"
 #include "ipc/ipc_server.hpp"
 #include "plutonium/plutonium.hpp"
@@ -164,7 +165,8 @@ namespace
 
     int run_subprocess(const utils::nt::library& process, const std::filesystem::path& path)
     {
-        const cef::cef_ui cef_ui{process, path};
+        const discord::launcher_presence presence;
+        cef::cef_ui cef_ui{process, path};
         return cef_ui.run_process();
     }
 
@@ -188,6 +190,7 @@ namespace
 
     void show_window(const utils::nt::library& process, const std::filesystem::path& path)
     {
+        discord::launcher_presence presence;
         cef::cef_ui cef_ui{process, path};
         commands::register_all_commands(cef_ui);
         const auto offline = utils::flags::has_flag("offline");

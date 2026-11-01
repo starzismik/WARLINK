@@ -527,7 +527,7 @@ namespace hmw_host
                         const auto port=number(p,"port",27017,1024,65535);const auto motd=safe_text(str(p,"motd","Bienvenue sur WARLINK"));
                         if(action=="publish"){
                             if(str(p,"access")!="public")throw std::runtime_error("Choisis Communauté WARLINK et redémarre le serveur avant publication");
-                            if(udp(port,"getinfo warlink",300).find("\\sv_running\\1")==std::string::npos)throw std::runtime_error("Le serveur n'est pas encore prêt");
+                            if(udp(port,"getinfo warlink",1200).find("\\sv_running\\1")==std::string::npos) { const auto process=owned_process(id,p); if(!process)throw std::runtime_error("Le serveur est arrêté. Clique sur Démarrer, attends le statut En ligne, puis publie-le."); CloseHandle(process); throw std::runtime_error("Le serveur charge encore sa carte ou ne répond pas. Consulte le journal de démarrage avant de réessayer."); }
                             const auto proof=utils::string::to_lower(utils::cryptography::sha256::compute(key,true));
                             udp(port,"rcon "+str(p,"rconPassword")+" set sv_motd \"[WL:"+proof+"]\"");
                             std::this_thread::sleep_for(std::chrono::milliseconds(1300));
