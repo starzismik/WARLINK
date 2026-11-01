@@ -6,6 +6,7 @@
 #include <utils/properties.hpp>
 #include <utils/string.hpp>
 #include <regex>
+#include <utils/flags.hpp>
 #include <array>
 namespace warlink_product {
 namespace {
@@ -15,6 +16,8 @@ void text(rapidjson::Document& d,const char* k,const std::string& v){d.AddMember
 bool valid(const rapidjson::Document& d){try{numbers(str(d,"version"));const auto url=str(d,"downloadUrl");return url.empty()||url.starts_with("https://github.com/starzismik/WARLINK/releases/download/");}catch(...){return false;}}
 }
 rapidjson::Document update_status(){
+ if(utils::flags::has_flag("preview-required-update")){rapidjson::Document out;out.SetObject();out.AddMember("verified",true,out.GetAllocator());out.AddMember("required",true,out.GetAllocator());out.AddMember("preview",true,out.GetAllocator());text(out,"current",version);text(out,"latest","1.0.1");text(out,"downloadUrl","");text(out,"notes","Améliorations des serveurs WARLINK, des bots et de l’interface.");return out;}
+
  const auto cache=utils::properties::get_appdata_path()/"user"/"warlink-required-update.json";
  rapidjson::Document manifest;manifest.SetObject();std::string saved;bool verified=false;
  if(utils::io::read_file(cache,&saved)){if(manifest.Parse(saved).HasParseError()||!valid(manifest))manifest.SetObject();}
@@ -25,7 +28,7 @@ rapidjson::Document update_status(){
   if(numbers(str(manifest,"version"))>numbers(version)) {rapidjson::StringBuffer b;rapidjson::Writer<rapidjson::StringBuffer> w(b);manifest.Accept(w);utils::io::write_file(cache,b.GetString());}
  }}
  const auto latest=valid(manifest)?str(manifest,"version"):version;
- rapidjson::Document out;out.SetObject();out.AddMember("verified",verified,out.GetAllocator());out.AddMember("required",numbers(latest)>numbers(version),out.GetAllocator());text(out,"current",version);text(out,"latest",latest);text(out,"downloadUrl",str(manifest,"downloadUrl"));return out;
+ rapidjson::Document out;out.SetObject();out.AddMember("verified",verified,out.GetAllocator());out.AddMember("required",numbers(latest)>numbers(version),out.GetAllocator());text(out,"current",version);text(out,"latest",latest);text(out,"downloadUrl",str(manifest,"downloadUrl"));text(out,"notes",str(manifest,"notes"));return out;
 }
 void register_commands(cef::cef_ui& ui){ui.add_command("warlink-update-status",[](const auto&,rapidjson::Document& out){out=update_status();});ui.add_command("warlink-discord-info",[](const auto&,rapidjson::Document& out){
  const auto r=utils::http::get_data("https://discord.com/api/v10/invites/3hrvcWNDPa?with_counts=true",{},{},{},8,0);out.SetObject();if(!r||r->response_code!=200){out.AddMember("ok",false,out.GetAllocator());return;}rapidjson::Document j;if(j.Parse(r->buffer).HasParseError()||!j.IsObject()){out.AddMember("ok",false,out.GetAllocator());return;}auto& a=out.GetAllocator();out.AddMember("ok",true,a);for(const auto* k:{"approximate_member_count","approximate_presence_count"})if(j.HasMember(k)&&j[k].IsNumber())out.AddMember(rapidjson::Value(k,a),rapidjson::Value(j[k],a),a);

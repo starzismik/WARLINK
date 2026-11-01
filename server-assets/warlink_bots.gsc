@@ -14,6 +14,7 @@ init()
     LogPrint("WARLINK_BOTS_READY\n");
     level thread warlink_manage_bots();
     level thread warlink_connections();
+    level thread warlink_banner_tests();
     LogPrint("WARLINK_MESSAGES_READY\n");
 }
 
@@ -241,5 +242,24 @@ warlink_balance_bots()
         bot maps\mp\gametypes\_menus::endrespawnnotify();
         LogPrint("WARLINK_BOT_TEAM_BALANCED\n");
         return;
+    }
+}
+
+warlink_banner_tests()
+{
+    level endon("game_ended");
+    for (;;)
+    {
+        wait 1;
+        if (!getdvarint("warlink_test_banner")) continue;
+        setdvar("warlink_test_banner", "0");
+        sent = 0;
+        foreach (player in level.players)
+        {
+            if (isBot(player)) continue;
+            player warlink_display_message("^2WARLINK ^7| ^3TEST BANDEAU MILIEU GAUCHE");
+            sent++;
+        }
+        LogPrint("WARLINK_BANNER_TEST_SENT " + sent + "\n");
     }
 }

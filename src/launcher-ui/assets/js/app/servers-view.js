@@ -185,9 +185,9 @@
             host.innerHTML=r.servers.map(p=>`<div class="mods-row"><strong class="warlink-colored-name">${window.WarlinkName.html(p.name)}</strong><span class="hmw-state is-active">Actif · vérifié</span><span> · ${escapeHtml(p.map)} · ${p.players}/${p.maxPlayers} joueurs · ${escapeHtml(p.id)}${p.locked?' · mot de passe':''}</span><button class="mods-btn" data-community-join="${escapeHtml(p.id)}" data-locked="${p.locked?'1':'0'}">Rejoindre</button></div>`).join('') || '<p>Aucun serveur communautaire en ligne. Démarre ton serveur public puis utilise « Publier sur WARLINK » dans son gestionnaire.</p>';
             host.dataset.loaded='true';if(updated)updated.textContent='Mis à jour à '+new Date().toLocaleTimeString('fr-FR')+' · auto 15 s';
             host.querySelectorAll('[data-community-join]').forEach(b=>b.addEventListener('click',async()=>{try{
-                let password='';if(b.dataset.locked==='1'){const choice=await window.showMessageBox('Mot de passe','<input id="hmw-community-password" type="password" maxlength="64" autocomplete="off">',['Annuler','Rejoindre']);if(choice!==1)return;password=document.getElementById('hmw-community-password').value;}
-                const result=await window.executeCommand('hmw-host',{action:'join-remote',endpoint:b.dataset.communityJoin,password});if(!result?.ok)throw Error(result?.error||'Connexion impossible');window.showMessageBox('Rejoindre HorizonMW',escapeHtml(result.message),['OK']);
-            }catch(e){window.showToast(e.message,'error');}}));
+                if(b.disabled)return;b.disabled=true;let password='';if(b.dataset.locked==='1'){const choice=await window.showMessageBox('Mot de passe','<input id="hmw-community-password" type="password" maxlength="64" autocomplete="off">',['Annuler','Rejoindre']);if(choice!==1){b.disabled=false;return;}password=document.getElementById('hmw-community-password').value;}
+                const result=await window.executeCommand('hmw-host',{action:'join-remote',endpoint:b.dataset.communityJoin,password});if(!result?.ok)throw Error(result?.error||'Connexion impossible');window.showToast(result.message,'success');
+            }catch(e){window.showToast(e.message,'error');}finally{b.disabled=false;}}));
         }catch(e){if(!current())return;if(updated)updated.textContent='Actualisation impossible · nouvel essai automatique';if(!host.dataset.loaded)host.textContent='Annuaire communautaire : '+e.message;}
         finally{if(current()&&button){button.disabled=false;button.textContent='↻ Actualiser';}}
     }

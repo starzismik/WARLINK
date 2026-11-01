@@ -129,7 +129,7 @@ namespace hmw_host
             line("scr_game_hardpoints",boolean(p,"killstreaks",true)?"1":"0");
             line("g_allowVote",boolean(p,"voting",true)?"1":"0");
             line("scr_game_onlyheadshots",boolean(p,"headshots")?"1":"0");
-            line("scr_xpscale","1");
+            line("scr_xpscale",std::to_string(number(p,"xpMultiplier",1,1,2)));
             line("scr_hardcore",boolean(p,"hardcore")?"1":"0");
             line("g_hardcore",boolean(p,"hardcore")?"1":"0");
             line("scr_game_forceuav",boolean(p,"constantUav")?"1":"0");
@@ -260,6 +260,26 @@ namespace hmw_host
             rapidjson::Document state;state.SetObject();auto& a=state.GetAllocator();set(state,"pid",static_cast<int>(pi.dwProcessId),a);set(state,"created",std::to_string(created.dwHighDateTime)+":"+std::to_string(created.dwLowDateTime),a);
             write_json(profile_dir(id)/"process.json",state);CloseHandle(pi.hThread);CloseHandle(pi.hProcess);
         }
+        void launch_client(const std::filesystem::path& game, const std::string& endpoint, const std::string& pass)
+        {
+            const auto exe=game/"hmw-mod.exe";
+            std::wstring cmd=L"\""+exe.wstring()+L"\" \""+game.wstring()+L"\" -memoryfix +set password \""+utils::string::convert(pass)+L"\" +connect "+utils::string::convert(endpoint);
+            const auto logs=utils::properties::get_appdata_path()/"logs";std::filesystem::create_directories(logs);
+            SECURITY_ATTRIBUTES security{sizeof(SECURITY_ATTRIBUTES),nullptr,TRUE};
+            const HANDLE log=CreateFileW((logs/"horizon-client.log").c_str(),GENERIC_WRITE,FILE_SHARE_READ|FILE_SHARE_WRITE,&security,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL,nullptr);
+            const HANDLE input=CreateFileW(L"NUL",GENERIC_READ,FILE_SHARE_READ|FILE_SHARE_WRITE,&security,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,nullptr);
+            if(log==INVALID_HANDLE_VALUE || input==INVALID_HANDLE_VALUE) {
+                if(log!=INVALID_HANDLE_VALUE)CloseHandle(log);if(input!=INVALID_HANDLE_VALUE)CloseHandle(input);
+                throw std::runtime_error("Impossible de préparer le journal HorizonMW");
+            }
+            STARTUPINFOW si{};si.cb=sizeof(si);si.dwFlags=STARTF_USESTDHANDLES;si.hStdOutput=log;si.hStdError=log;si.hStdInput=input;PROCESS_INFORMATION pi{};
+            const BOOL ok=CreateProcessW(exe.c_str(),cmd.data(),nullptr,nullptr,TRUE,CREATE_NO_WINDOW,nullptr,game.c_str(),&si,&pi);
+            CloseHandle(log);CloseHandle(input);
+            if(!ok)throw std::runtime_error("Impossible de lancer HorizonMW");
+            const auto ended=WaitForSingleObject(pi.hProcess,1500);DWORD code=0;if(ended==WAIT_OBJECT_0)GetExitCodeProcess(pi.hProcess,&code);
+            CloseHandle(pi.hThread);CloseHandle(pi.hProcess);
+            if(ended==WAIT_OBJECT_0)throw std::runtime_error("HorizonMW s'est fermé au démarrage (code "+std::to_string(code)+"). Journal : "+utils::string::path_to_utf8(logs/"horizon-client.log"));
+        }
         void stop(const std::string& id, const rapidjson::Value& p)
         {
             const auto process=owned_process(id,p);if(!process)return;
@@ -303,20 +323,30 @@ namespace hmw_host
             }
             else if(action=="join-remote")
             {
-                const auto endpoint=str(request,"endpoint");
+                auto endpoint=str(request,"endpoint");
                 if(!std::regex_match(endpoint,std::regex("[0-9]{1,3}(\\.[0-9]{1,3}){3}:[0-9]{4,5}")))throw std::runtime_error("Adresse serveur invalide");
                 const auto split=endpoint.find(':');const auto remote_ip=endpoint.substr(0,split);const int remote_port=std::stoi(endpoint.substr(split+1));
                 if(inet_addr(remote_ip.c_str())==INADDR_NONE||remote_port>65535||remote_port<1024)throw std::runtime_error("Adresse serveur invalide");
-                const auto remote_info=udp(remote_port,"getinfo warlink",900,remote_ip);
+                // Use loopback only for an endpoint returned by a successful publication
+                // of this exact local profile. This avoids dependence on router NAT loopback.
+                if(std::filesystem::exists(root()))for(const auto& item:std::filesystem::directory_iterator(root())) {
+                    if(!item.is_directory() || !utils::io::file_exists(item.path()/"profile.json"))continue;
+                    const auto owner=read_json(item.path()/"directory-owner.json");
+                    if(str(owner,"endpoint")!=endpoint)continue;
+                    const auto local=read_json(item.path()/"profile.json");
+                    if(number(local,"port",27017,1024,65535)!=remote_port)continue;
+                    if(const auto process=owned_process(item.path().filename().string(),local)) {
+                        CloseHandle(process);endpoint="127.0.0.1:"+std::to_string(remote_port);break;
+                    }
+                }
+                const auto target_ip=endpoint.substr(0,endpoint.find(':'));
+                const auto remote_info=udp(remote_port,"getinfo warlink",900,target_ip);
                 if(remote_info.find("\\sv_running\\1")==std::string::npos)throw std::runtime_error("Ce serveur ne répond pas ou charge sa carte. Actualise la liste puis réessaie.");
                 const auto pass=safe_text(str(request,"password"),64);
                 if(utils::nt::is_process_running("hmw-mod.exe"))set(out,"message","HorizonMW est ouvert : saisis dans sa console connect "+endpoint,a);
                 else {
                     rapidjson::Document blank;blank.SetObject();const auto game=game_path(blank),exe=game/"hmw-mod.exe";
-                    std::wstring cmd=L"\""+exe.wstring()+L"\" \""+game.wstring()+L"\" -memoryfix +set password \""+utils::string::convert(pass)+L"\" +connect "+utils::string::convert(endpoint);
-                    STARTUPINFOW si{};si.cb=sizeof(si);PROCESS_INFORMATION pi{};
-                    if(!CreateProcessW(exe.c_str(),cmd.data(),nullptr,nullptr,FALSE,0,nullptr,game.c_str(),&si,&pi))throw std::runtime_error("Impossible de lancer HorizonMW");
-                    CloseHandle(pi.hThread);CloseHandle(pi.hProcess);set(out,"message","HorizonMW démarre vers "+endpoint,a);
+                    launch_client(game,endpoint,pass);set(out,"message","HorizonMW démarre vers "+endpoint,a);
                 }
             }
             else if(action=="reset-view")
@@ -425,6 +455,9 @@ namespace hmw_host
                         if(!result)throw std::runtime_error("Annuaire WARLINK inaccessible");
                         rapidjson::Document reply;if(reply.Parse(result->buffer).HasParseError()||!reply.IsObject())throw std::runtime_error("Réponse annuaire invalide");
                         if(result->response_code!=200)throw std::runtime_error(str(reply,"error",str(reply,"message","Publication refusée")));
+                        if(action=="publish" && reply.HasMember("server") && reply["server"].IsObject()) {
+                            set(owner,"endpoint",str(reply["server"],"id"),owner.GetAllocator());write_json(settings,owner);
+                        }
                         set(out,"message",action=="publish"?"Serveur publié : TCP et UDP vérifiés depuis Railway. Il restera listé tant qu'il répond.":"Serveur retiré de l'annuaire WARLINK",a);
                     }
                     else if(action=="start")start(id,p);
@@ -440,10 +473,7 @@ namespace hmw_host
                         {
                             const auto game=game_path(p),exe=game/"hmw-mod.exe";
                             const auto pass=safe_text(str(p,"password"),64);
-                            std::wstring cmd=L"\""+exe.wstring()+L"\" \""+game.wstring()+L"\" -memoryfix +set password \""+utils::string::convert(pass)+L"\" +connect "+utils::string::convert(endpoint);
-                            STARTUPINFOW si{};si.cb=sizeof(si);PROCESS_INFORMATION pi{};
-                            if(!CreateProcessW(exe.c_str(),cmd.data(),nullptr,nullptr,FALSE,0,nullptr,game.c_str(),&si,&pi))throw std::runtime_error("Impossible de lancer HorizonMW");
-                            CloseHandle(pi.hThread);CloseHandle(pi.hProcess);
+                            launch_client(game,endpoint,pass);
                             set(out,"message","HorizonMW démarre et se connectera au serveur local.",a);
                         }
                     }

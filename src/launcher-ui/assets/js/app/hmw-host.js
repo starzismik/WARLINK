@@ -39,7 +39,7 @@
         syncAllocation();
         const f=overlay.querySelector('form'),data=new FormData(f),p={};
         for(const [k,v] of data)p[k]=v;
-        for(const k of ['port','players','bots','scoreLimit','timeLimit','health','friendlyFire','announcementInterval','healthRegen','respawnDelay','lives','roundLimit','winLimit'])p[k]=Number(p[k]);
+        for(const k of ['port','players','bots','scoreLimit','timeLimit','health','friendlyFire','announcementInterval','healthRegen','respawnDelay','lives','roundLimit','winLimit','xpMultiplier'])p[k]=Number(p[k]);
         for(const k of ['killstreaks','voting','headshots','welcomeRespawn','hardcore','constantUav','disableSprint','thirdPerson','collision','botBalance'])p[k]=f.elements[k].checked;
         if(!p.difficulty)p.difficulty=f.elements.difficulty.value;if(!p.botWeapons)p.botWeapons=f.elements.botWeapons.value;
         p.rotation=p.rotation.split(/\s+/).filter(Boolean);p.id=selected;return p;
@@ -48,7 +48,7 @@
         overlay.querySelector('.hmwh-profiles').innerHTML=profiles.map(p=>`<button type="button" data-profile="${esc(p.id)}" class="${p.id===selected?'active':''}"><strong>${window.WarlinkName.html(p.name)}</strong><small>UDP ${p.port} · ${esc(p.access==='public'?'Communauté WARLINK':p.access==='local'?'Local':'Privé')}</small></button>`).join('')||'<p class="hmwh-muted">Crée ton premier serveur pour commencer.</p>';
     }
     function renderForm(profile){
-        const p={name:'STARZISMIK · HorizonMW',gamePath,port:27017,access:'private',password:'',serverKey:'',rconPassword:'',players:12,bots:0,difficulty:'regular',mode:'war',rotation:['mp_rust','mp_terminal'],scoreLimit:75,timeLimit:10,health:100,friendlyFire:0,killstreaks:true,voting:true,headshots:false,motd:'Bienvenue sur WARLINK',botWeapons:'mixed',botBalance:true,messagePosition:'left',healthRegen:5,respawnDelay:0,lives:0,roundLimit:1,winLimit:1,collision:true,advanced:'',...profile};
+        const p={name:'STARZISMIK · HorizonMW',gamePath,port:27017,access:'private',password:'',serverKey:'',rconPassword:'',players:12,bots:0,difficulty:'regular',mode:'war',rotation:['mp_rust','mp_terminal'],scoreLimit:75,timeLimit:10,health:100,friendlyFire:0,killstreaks:true,voting:true,headshots:false,motd:'Bienvenue sur WARLINK',botWeapons:'mixed',botBalance:true,xpMultiplier:1,messagePosition:'left',healthRegen:5,respawnDelay:0,lives:0,roundLimit:1,winLimit:1,collision:true,advanced:'',...profile};
         if(!p.gamePath)p.gamePath=gamePath;
         overlay.querySelector('.hmwh-editor').innerHTML=`
             <form class="hmwh-form">
@@ -73,9 +73,9 @@
                     ${field('humans','Places réservées aux humains','number',Math.max(1,p.players-p.bots),'min="1" max="18" required')}
                     ${field('bots','Nombre de bots (0 = sans bots)','number',p.bots,'min="0" max="17" required')}
                     <label class="hmwh-field"><span>Difficulté</span><select name="difficulty"><option value="recruit">Recrue</option><option value="regular">Normal</option><option value="hardened">Vétéran</option><option value="veteran">Expert</option><option value="mixed">Mélangée</option></select></label>
-                    <label class="hmwh-field"><span>Équipement des bots</span><select name="botWeapons"><option value="mixed">Mix · classes du jeu</option><option value="sniper">Sniper uniquement</option><option value="knife">Mêlée uniquement · sans munitions</option><option value="none">Sans arme</option></select></label><label><input name="botBalance" type="checkbox" ${p.botBalance?'checked':''}> Rééquilibrer les équipes avec les bots</label>
-                </div><p class="hmwh-muted hmwh-allocation" aria-live="polite"></p><p class="hmwh-muted">Les bots libèrent des places quand des humains rejoignent. Certaines cartes personnalisées n’ont pas de navigation pour les bots. XP normale ×1 ; la persistance du rang dépend du jeu.</p>
-                <h3>⚑ Règles de partie</h3><div class="hmwh-grid">
+                    <label class="hmwh-field"><span>Équipement des bots</span><select name="botWeapons"><option value="mixed">Mix · classes du jeu</option><option value="sniper">Sniper uniquement</option><option value="knife">Mêlée uniquement · sans munitions</option><option value="none">Sans arme</option></select></label><p class="hmwh-muted">La liste de tags personnalisés pour remplacer [BOT] n’est pas encore prise en charge par WARLINK. Les réglages d’armes et de difficulté restent utilisables.</p><label><input name="botBalance" type="checkbox" ${p.botBalance?'checked':''}> Rééquilibrer les équipes avec les bots</label>
+                </div><p class="hmwh-muted hmwh-allocation" aria-live="polite"></p><p class="hmwh-muted">Les bots libèrent des places quand des humains rejoignent. Certaines cartes personnalisées n’ont pas de navigation pour les bots. Le multiplicateur XP se règle dans Règles de partie ; la sauvegarde de progression dépend du client de jeu.</p>
+                <h3>⚑ Règles de partie</h3><div class="hmwh-grid"><label class="hmwh-field"><span>Expérience des joueurs</span><select name="xpMultiplier"><option value="1">XP normale · ×1</option><option value="2">Double XP · ×2</option></select></label>
                     ${field('scoreLimit','Limite de score (0 = illimité)','number',p.scoreLimit,'min="0" max="100000"')}
                     ${field('timeLimit','Durée en minutes (0 = illimité)','number',p.timeLimit,'min="0" max="1440"')}
                     ${field('health','Santé des joueurs','number',p.health,'min="1" max="1000"')}
@@ -96,7 +96,7 @@
             </form>`;
         const form=overlay.querySelector('form');
         window.WarlinkName.mount(form);
-        for(const k of ['access','mode','difficulty','friendlyFire','messagePosition','botWeapons'])form.elements[k].value=String(p[k]);
+        for(const k of ['access','mode','difficulty','friendlyFire','messagePosition','botWeapons','xpMultiplier'])form.elements[k].value=String(p[k]);
         overlay.querySelector('.hmwh-live-map').innerHTML=maps.map(m=>`<option value="${esc(m)}">${esc(mapLabel(m))}</option>`).join('');
         renderMaps();
         syncAllocation();
@@ -133,7 +133,7 @@
             <main><div class="hmwh-message" role="status"></div><div class="hmwh-editor"></div></main>
             <section class="hmwh-monitor"><h3>▣ Contrôle du serveur</h3><strong class="hmwh-status">Sélectionne un serveur</strong><div class="hmwh-controls"><button data-action="start">Démarrer</button><button data-action="stop">Arrêter</button><button data-action="restart">Redémarrer</button><button data-join>Rejoindre</button></div>
                 <code class="hmwh-address"></code><p class="hmwh-publishing hmwh-muted"></p><p class="hmwh-muted">Pour jouer ici : 127.0.0.1. Pour tes amis : ton adresse publique et le même port. Le mot de passe du serveur se saisit dans le jeu.</p>
-                <h3>▣ Actions en direct</h3><div class="hmwh-live"><button data-cmd="status">Joueurs / statut</button><button data-cmd="map_rotate">Carte suivante</button><button data-cmd="map_restart">Relancer la partie</button><button data-bots>Appliquer les bots</button><button data-network>Aide réseau / publication</button><button data-publish>Publier sur WARLINK</button><button data-unpublish>Retirer de WARLINK</button></div><div class="hmwh-rcon-form"><select class="hmwh-live-map" aria-label="Carte à charger"></select><button data-map>Charger la carte</button></div>
+                <h3>▣ Actions en direct</h3><div class="hmwh-live"><button data-cmd="status">Joueurs / statut</button><button data-cmd="map_rotate">Carte suivante</button><button data-cmd="map_restart">Relancer la partie</button><button data-bots>Appliquer les bots</button><button data-xp>Appliquer les XP</button><button data-banner>Tester le bandeau</button><button data-network>Aide réseau / publication</button><button data-publish>Publier sur WARLINK</button><button data-unpublish>Retirer de WARLINK</button></div><div class="hmwh-rcon-form"><select class="hmwh-live-map" aria-label="Carte à charger"></select><button data-map>Charger la carte</button></div>
                 <form class="hmwh-rcon-form"><label class="hmwh-field"><span>Console RCON · commande administrateur</span><input name="command" placeholder="status, map mp_rust, clientkick 2…" autocomplete="off"></label><button>Envoyer</button></form>
                 <pre class="hmwh-rcon-output"></pre><h3>Journal de démarrage</h3><div class="hmwh-log-legend"><span class="hmwh-log-error">Erreur</span><span class="hmwh-log-warn">Avertissement</span><span class="hmwh-log-success">Succès</span><span class="hmwh-log-map">Carte</span><span class="hmwh-log-asset">Ressource</span></div><pre class="hmwh-log"></pre><details><summary>Réponse réseau</summary><pre class="hmwh-info"></pre></details>
             </section></div></div>`;
@@ -152,6 +152,8 @@
             if(b.dataset.action)run(()=>act(b.dataset.action));
             if(b.dataset.cmd)run(()=>rcon(b.dataset.cmd));
             if(b.hasAttribute('data-map'))run(()=>{const map=overlay.querySelector('.hmwh-live-map').value;if(!/^[a-zA-Z0-9_]+$/.test(map))throw Error('Choisis une carte.');return rcon('map '+map);});
+            if(b.hasAttribute('data-xp'))run(()=>rcon('set scr_xpscale '+values().xpMultiplier));
+            if(b.hasAttribute('data-banner'))run(()=>rcon('set warlink_test_banner 1'));
             if(b.hasAttribute('data-bots'))run(()=>{const p=values();if(p.bots>p.players-1)throw Error('Il faut réserver au moins une place pour un joueur.');return rcon(`set warlink_bot_count ${p.bots}; set warlink_bot_difficulty ${p.difficulty}; set warlink_bot_weapons ${p.botWeapons}; set warlink_bot_balance ${p.botBalance?1:0}`);});
             if(b.hasAttribute('data-publish'))run(async()=>{const choice=await window.showMessageBox('Publier dans la communauté WARLINK','Ton adresse IP publique, le port, le nom du serveur, la carte et le nombre de joueurs seront visibles aux utilisateurs WARLINK. Les mots de passe ne sont pas publiés.',['Annuler','Publier']);if(choice!==1)return;let r;try{r=await api('publish',{id:selected});}catch(e){networkHelp(e.message);return;}message(r.message);await window.ServersView.refreshCommunity();});
             if(b.hasAttribute('data-unpublish'))run(async()=>{const r=await api('unpublish',{id:selected});message(r.message);window.dispatchEvent(new Event('warlink-hmw-profiles-changed'));});
