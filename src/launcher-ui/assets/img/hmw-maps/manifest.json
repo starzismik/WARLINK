@@ -1,0 +1,287 @@
+{
+  "mp_abandon": {
+    "file": "mp_abandon.jpg",
+    "sourceZone": "mp_abandon_load",
+    "sourceAsset": "loadscreen_mp_abandon.dds"
+  },
+  "mp_afghan": {
+    "file": "mp_afghan.jpg",
+    "sourceZone": "mp_afghan_load",
+    "sourceAsset": "loadscreen_mp_afghan.dds"
+  },
+  "mp_alpha": {
+    "file": "mp_alpha.jpg",
+    "sourceZone": "mp_alpha_load",
+    "sourceAsset": "loadscreen_mp_alpha.dds"
+  },
+  "mp_backlot": {
+    "file": "mp_backlot.jpg",
+    "sourceZone": "mp_backlot_load",
+    "sourceAsset": "loadscreen_mp_backlot.dds"
+  },
+  "mp_bloc": {
+    "file": "mp_bloc.jpg",
+    "sourceZone": "mp_bloc_load",
+    "sourceAsset": "loadscreen_mp_bloc.dds"
+  },
+  "mp_bog": {
+    "file": "mp_bog.jpg",
+    "sourceZone": "mp_bog_load",
+    "sourceAsset": "loadscreen_mp_bog.dds"
+  },
+  "mp_bog_summer": {
+    "file": "mp_bog_summer.jpg",
+    "sourceZone": "mp_bog_summer_load",
+    "sourceAsset": "loadscreen_mp_bog_summer.dds"
+  },
+  "mp_boneyard": {
+    "file": "mp_boneyard.jpg",
+    "sourceZone": "mp_boneyard_load",
+    "sourceAsset": "loadscreen_mp_boneyard.dds"
+  },
+  "mp_bootleg": {
+    "file": "mp_bootleg.jpg",
+    "sourceZone": "mp_bootleg_load",
+    "sourceAsset": "loadscreen_mp_bootleg.dds"
+  },
+  "mp_bravo": {
+    "file": "mp_bravo.jpg",
+    "sourceZone": "mp_bravo_load",
+    "sourceAsset": "loadscreen_mp_bravo.dds"
+  },
+  "mp_brecourt": {
+    "file": "mp_brecourt.jpg",
+    "sourceZone": "mp_brecourt_load",
+    "sourceAsset": "loadscreen_mp_brecourt.dds"
+  },
+  "mp_broadcast": {
+    "file": "mp_broadcast.jpg",
+    "sourceZone": "mp_broadcast_load",
+    "sourceAsset": "loadscreen_mp_broadcast.dds"
+  },
+  "mp_carentan": {
+    "file": "mp_carentan.jpg",
+    "sourceZone": "mp_carentan_load",
+    "sourceAsset": "loadscreen_mp_carentan.dds"
+  },
+  "mp_cargoship": {
+    "file": "mp_cargoship.jpg",
+    "sourceZone": "mp_cargoship_load",
+    "sourceAsset": "loadscreen_mp_cargoship.dds"
+  },
+  "mp_checkpoint": {
+    "file": "mp_checkpoint.jpg",
+    "sourceZone": "mp_checkpoint_load",
+    "sourceAsset": "loadscreen_mp_checkpoint.dds"
+  },
+  "mp_citystreets": {
+    "file": "mp_citystreets.jpg",
+    "sourceZone": "mp_citystreets_load",
+    "sourceAsset": "loadscreen_mp_citystreets.dds"
+  },
+  "mp_compact": {
+    "file": "mp_compact.jpg",
+    "sourceZone": "mp_compact_load",
+    "sourceAsset": "loadscreen_mp_compact.dds"
+  },
+  "mp_complex": {
+    "file": "mp_complex.jpg",
+    "sourceZone": "mp_complex_load",
+    "sourceAsset": "loadscreen_mp_complex.dds"
+  },
+  "mp_convoy": {
+    "file": "mp_convoy.jpg",
+    "sourceZone": "mp_convoy_load",
+    "sourceAsset": "loadscreen_mp_convoy.dds"
+  },
+  "mp_countdown": {
+    "file": "mp_countdown.jpg",
+    "sourceZone": "mp_countdown_load",
+    "sourceAsset": "loadscreen_mp_countdown.dds"
+  },
+  "mp_courtyard_ss": {
+    "file": "mp_courtyard_ss.jpg",
+    "sourceZone": "mp_courtyard_ss_load",
+    "sourceAsset": "loadscreen_mp_courtyard_ss.dds"
+  },
+  "mp_crash": {
+    "file": "mp_crash.jpg",
+    "sourceZone": "mp_crash_load",
+    "sourceAsset": "loadscreen_mp_crash.dds"
+  },
+  "mp_crash_snow": {
+    "file": "mp_crash_snow.jpg",
+    "sourceZone": "mp_crash_snow_load",
+    "sourceAsset": "loadscreen_mp_crash_snow.dds"
+  },
+  "mp_creek": {
+    "file": "mp_creek.jpg",
+    "sourceZone": "mp_creek_load",
+    "sourceAsset": "loadscreen_mp_creek.dds"
+  },
+  "mp_crossfire": {
+    "file": "mp_crossfire.jpg",
+    "sourceZone": "mp_crossfire_load",
+    "sourceAsset": "loadscreen_mp_crossfire.dds"
+  },
+  "mp_derail": {
+    "file": "mp_derail.jpg",
+    "sourceZone": "mp_derail_load",
+    "sourceAsset": "loadscreen_mp_derail.dds"
+  },
+  "mp_dome": {
+    "file": "mp_dome.jpg",
+    "sourceZone": "mp_dome_load",
+    "sourceAsset": "loadscreen_mp_dome.dds"
+  },
+  "mp_estate": {
+    "file": "mp_estate.jpg",
+    "sourceZone": "mp_estate_load",
+    "sourceAsset": "loadscreen_mp_estate.dds"
+  },
+  "mp_farm": {
+    "file": "mp_farm.jpg",
+    "sourceZone": "mp_farm_load",
+    "sourceAsset": "loadscreen_mp_farm.dds"
+  },
+  "mp_farm_spring": {
+    "file": "mp_farm_spring.jpg",
+    "sourceZone": "mp_farm_spring_load",
+    "sourceAsset": "loadscreen_mp_daybreak.dds"
+  },
+  "mp_favela": {
+    "file": "mp_favela.jpg",
+    "sourceZone": "mp_favela_load",
+    "sourceAsset": "loadscreen_mp_favela.dds"
+  },
+  "mp_fuel2": {
+    "file": "mp_fuel2.jpg",
+    "sourceZone": "mp_fuel2_load",
+    "sourceAsset": "loadscreen_mp_fuel2.dds"
+  },
+  "mp_hardhat": {
+    "file": "mp_hardhat.jpg",
+    "sourceZone": "mp_hardhat_load",
+    "sourceAsset": "loadscreen_mp_hardhat.dds"
+  },
+  "mp_highrise": {
+    "file": "mp_highrise.jpg",
+    "sourceZone": "mp_highrise_load",
+    "sourceAsset": "loadscreen_mp_highrise.dds"
+  },
+  "mp_invasion": {
+    "file": "mp_invasion.jpg",
+    "sourceZone": "mp_invasion_load",
+    "sourceAsset": "loadscreen_mp_invasion.dds"
+  },
+  "mp_killhouse": {
+    "file": "mp_killhouse.jpg",
+    "sourceZone": "mp_killhouse_load",
+    "sourceAsset": "loadscreen_mp_killhouse.dds"
+  },
+  "mp_lambeth": {
+    "file": "mp_lambeth.jpg",
+    "sourceZone": "mp_lambeth_load",
+    "sourceAsset": "loadscreen_mp_lambeth.dds"
+  },
+  "mp_mogadishu": {
+    "file": "mp_mogadishu.jpg",
+    "sourceZone": "mp_mogadishu_load",
+    "sourceAsset": "loadscreen_mp_mogadishu.dds"
+  },
+  "mp_nightshift": {
+    "file": "mp_nightshift.jpg",
+    "sourceZone": "mp_nightshift_load",
+    "sourceAsset": "loadscreen_mp_nightshift.dds"
+  },
+  "mp_overgrown": {
+    "file": "mp_overgrown.jpg",
+    "sourceZone": "mp_overgrown_load",
+    "sourceAsset": "loadscreen_mp_overgrown.dds"
+  },
+  "mp_paris": {
+    "file": "mp_paris.jpg",
+    "sourceZone": "mp_paris_load",
+    "sourceAsset": "loadscreen_mp_paris.dds"
+  },
+  "mp_pipeline": {
+    "file": "mp_pipeline.jpg",
+    "sourceZone": "mp_pipeline_load",
+    "sourceAsset": "loadscreen_mp_pipeline.dds"
+  },
+  "mp_plaza2": {
+    "file": "mp_plaza2.jpg",
+    "sourceZone": "mp_plaza2_load",
+    "sourceAsset": "loadscreen_mp_plaza2.dds"
+  },
+  "mp_quarry": {
+    "file": "mp_quarry.jpg",
+    "sourceZone": "mp_quarry_load",
+    "sourceAsset": "loadscreen_mp_quarry.dds"
+  },
+  "mp_rundown": {
+    "file": "mp_rundown.jpg",
+    "sourceZone": "mp_rundown_load",
+    "sourceAsset": "loadscreen_mp_rundown.dds"
+  },
+  "mp_rust": {
+    "file": "mp_rust.jpg",
+    "sourceZone": "mp_rust_load",
+    "sourceAsset": "loadscreen_mp_rust.dds"
+  },
+  "mp_seatown": {
+    "file": "mp_seatown.jpg",
+    "sourceZone": "mp_seatown_load",
+    "sourceAsset": "loadscreen_mp_seatown.dds"
+  },
+  "mp_shipment": {
+    "file": "mp_shipment.jpg",
+    "sourceZone": "mp_shipment_load",
+    "sourceAsset": "loadscreen_mp_shipment.dds"
+  },
+  "mp_showdown": {
+    "file": "mp_showdown.jpg",
+    "sourceZone": "mp_showdown_load",
+    "sourceAsset": "loadscreen_mp_showdown.dds"
+  },
+  "mp_storm": {
+    "file": "mp_storm.jpg",
+    "sourceZone": "mp_storm_load",
+    "sourceAsset": "loadscreen_mp_storm.dds"
+  },
+  "mp_strike": {
+    "file": "mp_strike.jpg",
+    "sourceZone": "mp_strike_load",
+    "sourceAsset": "loadscreen_mp_strike.dds"
+  },
+  "mp_subbase": {
+    "file": "mp_subbase.jpg",
+    "sourceZone": "mp_subbase_load",
+    "sourceAsset": "loadscreen_mp_subbase.dds"
+  },
+  "mp_terminal": {
+    "file": "mp_terminal.jpg",
+    "sourceZone": "mp_terminal_load",
+    "sourceAsset": "loadscreen_mp_terminal.dds"
+  },
+  "mp_trailerpark": {
+    "file": "mp_trailerpark.jpg",
+    "sourceZone": "mp_trailerpark_load",
+    "sourceAsset": "loadscreen_mp_trailerpark.dds"
+  },
+  "mp_underground": {
+    "file": "mp_underground.jpg",
+    "sourceZone": "mp_underground_load",
+    "sourceAsset": "loadscreen_mp_underground.dds"
+  },
+  "mp_underpass": {
+    "file": "mp_underpass.jpg",
+    "sourceZone": "mp_underpass_load",
+    "sourceAsset": "loadscreen_mp_underpass.dds"
+  },
+  "mp_vacant": {
+    "file": "mp_vacant.jpg",
+    "sourceZone": "mp_vacant_load",
+    "sourceAsset": "loadscreen_mp_vacant.dds"
+  }
+}
