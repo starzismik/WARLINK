@@ -11,6 +11,9 @@ init()
     if (!getdvarint("dedicated") || !getdvarint("warlink_managed_server"))
         return;
     precacheitem("h2_l118a_mp_l118ascope");
+    level.warlink_snipers = ["h2_l118a_mp_l118ascope"];
+    level.warlink_sniper_next = 0;
+    level thread warlink_build_sniper_catalog();
     LogPrint("WARLINK_BOTS_READY\n");
     level thread warlink_manage_bots();
     level thread warlink_connections();
@@ -71,12 +74,16 @@ warlink_manage_bots()
             {
                 bot.warlink_loadout_started = true;
                 bot thread warlink_loadout_spawns();
+                bot thread warlink_death_drops();
             }
             bot warlink_loadout();
         }
         if (getdvarint("warlink_bot_inspect"))
         {
             setdvar("warlink_bot_inspect", "0");
+            drops = 0;
+            foreach (sniper in level.warlink_snipers) drops += getentarray("weapon_" + sniper, "classname").size;
+            LogPrint("WARLINK_DROPPED_WEAPONS " + drops + "\n");
             foreach (bot in bots)
             {
                 if (bot.sessionstate != "playing") continue;
@@ -111,6 +118,7 @@ warlink_welcome()
     {
         self waittill("spawned_player");
         wait 1;
+        if (getdvar("warlink_bot_weapons") == "sniper") self enableweaponpickup();
         if (first_spawn || getdvarint("warlink_welcome_respawn"))
         {
             text = getdvar("warlink_welcome");
@@ -185,6 +193,7 @@ warlink_loadout_spawns()
     {
         self waittill("spawned_player");
         self.warlink_weapon_mode = undefined;
+        self.warlink_sniper_weapon = undefined;
         wait 0.5;
         self warlink_loadout();
     }
@@ -197,7 +206,7 @@ warlink_loadout()
     if (mode == "") mode = "mixed";
     if (isdefined(self.warlink_weapon_mode) && self.warlink_weapon_mode == mode)
     {
-        if (mode != "sniper" || (self hasweapon("h2_l118a_mp_l118ascope") && self getcurrentweapon() == "h2_l118a_mp_l118ascope")) return;
+        if (mode != "sniper" || (isdefined(self.warlink_sniper_weapon) && self hasweapon(self.warlink_sniper_weapon) && self getcurrentweapon() == self.warlink_sniper_weapon)) return;
     }
     previous = self.warlink_weapon_mode;
     self.warlink_weapon_mode = mode;
@@ -207,11 +216,28 @@ warlink_loadout()
     self allowmelee(true);
     if (mode == "mixed")
     {
+        self enableweaponpickup();
         if (isdefined(previous) && previous != "mixed") self suicide();
         return;
     }
+    if (mode == "sniper")
+    {
+        if (!isdefined(self.warlink_sniper_weapon) || previous != "sniper")
+        {
+            self.warlink_sniper_weapon = level.warlink_snipers[level.warlink_sniper_next];
+            level.warlink_sniper_next = (level.warlink_sniper_next + 1) % level.warlink_snipers.size;
+            if (isdefined(self.warlink_last_sniper) && self.warlink_sniper_weapon == self.warlink_last_sniper && level.warlink_snipers.size > 1)
+            {
+                self.warlink_sniper_weapon = level.warlink_snipers[level.warlink_sniper_next];
+                level.warlink_sniper_next = (level.warlink_sniper_next + 1) % level.warlink_snipers.size;
+            }
+            self.warlink_last_sniper = self.warlink_sniper_weapon;
+        }
+    }
+    self disableweaponpickup();
     self takeallweapons();
     self disableoffhandweapons();
+    weapon = "none";
     if (mode == "none")
     {
         self disableweapons();
@@ -219,18 +245,22 @@ warlink_loadout()
     }
     else
     {
-        self giveweapon("h2_l118a_mp_l118ascope");
-        self switchtoweaponimmediate("h2_l118a_mp_l118ascope");
+        weapon = "h2_l118a_mp_l118ascope";
+        if (mode == "sniper") weapon = self.warlink_sniper_weapon;
+        self giveweapon(weapon);
+        self switchtoweaponimmediate(weapon);
+        self.currentweaponatspawn = weapon;
+        self.lastdroppableweapon = weapon;
         self disableweaponswitch();
-        if (mode == "sniper") self givemaxammo("h2_l118a_mp_l118ascope");
+        if (mode == "sniper") self givemaxammo(weapon);
         else
         {
-            self setweaponammoclip("h2_l118a_mp_l118ascope", 0);
-            self setweaponammostock("h2_l118a_mp_l118ascope", 0);
+            self setweaponammoclip(weapon, 0);
+            self setweaponammostock(weapon, 0);
         }
     }
     held = self getcurrentweapon();
-    LogPrint("WARLINK_LOADOUT_APPLIED " + mode + " held=" + held + " has_sniper=" + self hasweapon("h2_l118a_mp_l118ascope") + "\n");
+    LogPrint("WARLINK_LOADOUT_APPLIED " + mode + " held=" + held + " selected=" + weapon + "\n");
 }
 
 warlink_balance_bots()
@@ -404,4 +434,73 @@ warlink_moderation()
         }
         setdvar("warlink_mod_result", result);
     }
+}
+
+warlink_build_sniper_catalog()
+{
+    bases = ["h1_barrett", "h1_dragunov", "h1_m21", "h1_m40a3", "h1_remington700", "h1_febsnp", "h1_junsnp"];
+    rows = tablegetrowcount("mp/customweapons.csv");
+    for (i = 0; i < rows; i++)
+    {
+        if (tablelookupbyrow("mp/customweapons.csv", i, 1) != "weapon_sniper") continue;
+        base = tablelookupbyrow("mp/customweapons.csv", i, 0);
+        duplicate = false;
+        foreach (existing in bases) if (existing == base) duplicate = true;
+        if (!duplicate) bases[bases.size] = base;
+    }
+    catalog = [];
+    foreach (base in bases)
+    {
+        if (getsubstr(base, 0, 3) == "h1_")
+            weapon = base + "_mp";
+        else
+            weapon = base + "_mp_" + getsubstr(base, 3, base.size) + "scope";
+        if (weaponclass(weapon) != "sniper" && getsubstr(base, 0, 3) == "h1_")
+        {
+            alternatives = [base + "_mp_a#none_f#base", getsubstr(base, 3, base.size) + "_mp"];
+            foreach (alternate in alternatives) if (weaponclass(alternate) == "sniper") { weapon = alternate; break; }
+        }
+        if (weaponclass(weapon) != "sniper")
+        {
+            LogPrint("WARLINK_SNIPER_REJECTED " + base + " " + weapon + "\n");
+            continue;
+        }
+        precacheitem(weapon);
+        catalog[catalog.size] = weapon;
+        LogPrint("WARLINK_SNIPER_VALIDATED " + base + " " + weapon + "\n");
+    }
+    if (catalog.size) level.warlink_snipers = catalog;
+    level.warlink_sniper_next = 0;
+    setdvar("warlink_sniper_count", level.warlink_snipers.size);
+}
+
+warlink_death_drops()
+{
+    self endon("disconnect");
+    for (;;)
+    {
+        self waittill("death");
+        if (getdvar("warlink_bot_weapons") != "sniper" || !isdefined(self.warlink_sniper_weapon)) continue;
+        weapon = self.warlink_sniper_weapon;
+        location = self.origin;
+        wait 0.1;
+        dropped = undefined;
+        source = "existing";
+        foreach (item in getentarray("weapon_" + weapon, "classname"))
+        {
+            if (distance(item.origin, location) < 64) { dropped = item; break; }
+        }
+        if (!isdefined(dropped)) { dropped = self dropitem(weapon); source = "created"; }
+        if (isdefined(dropped))
+        {
+            dropped thread warlink_drop_cleanup();
+            LogPrint("WARLINK_SNIPER_DROPPED " + weapon + " class=" + dropped.classname + " source=" + source + "\n");
+        }
+    }
+}
+
+warlink_drop_cleanup()
+{
+    wait 45;
+    if (isdefined(self)) self delete();
 }
