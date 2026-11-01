@@ -116,7 +116,19 @@
             ${gameId === 'hmw-mod' ? '</details>' : ''}
         `;
 
-        if(gameId === 'hmw-mod'){loadOwnedServers(panel);loadCommunity(panel);}
+        if(gameId === 'hmw-mod'){
+            const container=panel.querySelector('.hmw-owned-servers'),communityHead=container.querySelector('.hmw-community-head');
+            const online=document.createElement('section');online.className='warlink-servers-online';online.id='warlink-servers-online';online.setAttribute('role','tabpanel');
+            const owned=document.createElement('section');owned.className='warlink-servers-owned';owned.id='warlink-servers-owned';owned.setAttribute('role','tabpanel');
+            while(container.firstChild && container.firstChild!==communityHead)owned.appendChild(container.firstChild);
+            while(container.firstChild)online.appendChild(container.firstChild);
+            const officialPanel=panel.querySelector('.hmw-official-servers');if(officialPanel)online.appendChild(officialPanel);
+            container.append(online,owned);
+            const navigation=document.createElement('nav');navigation.className='warlink-server-pages';navigation.setAttribute('role','tablist');navigation.setAttribute('aria-label','Pages des serveurs');navigation.innerHTML='<button type="button" class="mods-btn" role="tab" data-server-page="online" aria-controls="warlink-servers-online">Serveurs en ligne</button><button type="button" class="mods-btn" role="tab" data-server-page="owned" aria-controls="warlink-servers-owned">Mes serveurs</button>';container.before(navigation);
+            function selectPage(name){s.serverPage=name;online.hidden=name!=='online';owned.hidden=name!=='owned';for(const b of navigation.querySelectorAll('button')){const active=b.dataset.serverPage===name;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active));}if(name==='owned')loadOwnedServers(panel);else loadCommunity(panel);}
+            navigation.addEventListener('click',e=>{const button=e.target.closest('[data-server-page]');if(button)selectPage(button.dataset.serverPage);});
+            selectPage(s.serverPage||'online');loadOwnedServers(panel);
+        }
         panel.querySelector('[data-community-refresh]')?.addEventListener('click',()=>refreshCommunity(panel));
         const official=panel.querySelector('.hmw-official-servers');
         if(official)official.addEventListener('toggle',()=>{s.horizonExpanded=official.open;official.querySelector('.hmw-official-label').textContent=(official.open?'Masquer':'Afficher')+' les serveurs HorizonMW';});
