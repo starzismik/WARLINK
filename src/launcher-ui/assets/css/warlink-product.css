@@ -8,3 +8,5 @@
 
 /* Le tricolore se place au-dessus de la rangée des paramètres. */
 .sidebar-bottom{flex-wrap:wrap}.sidebar-bottom>.warlink-tricolor{flex:0 0 100%;width:100%;justify-content:flex-start;padding-left:5px;box-sizing:border-box;margin:0 0 8px}.sidebar-bottom>.warlink-tricolor span{flex:0 0 auto}
+
+.warlink-games-heading{display:flex;align-items:center;justify-content:space-between;min-height:28px;border-top:1px solid var(--border);padding:6px 4px 0;margin-top:8px}.warlink-games-heading>span{font:9px var(--font-mono);letter-spacing:1px;color:var(--text-muted);white-space:nowrap;opacity:0}.sidebar:hover .warlink-games-heading>span{opacity:1}.warlink-games-heading button{flex:0 0 24px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;padding:0;border:1px solid var(--border-hi);border-radius:0;background:var(--surface-hi);color:var(--accent);font:20px/1 Arial,sans-serif;cursor:pointer}.warlink-games-heading button:hover{border-color:var(--accent);background:var(--accent-soft)}#warlink-sidebar-games[hidden]{display:none!important}
