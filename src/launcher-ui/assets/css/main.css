@@ -8803,41 +8803,41 @@ html .title-bar .title-text::before { display: none; }
 
 /* STARZISMIK inherits the tactical layout; other theme palettes stay original. */
 html:not([data-theme])[data-accent="starzismik"] {
-    --bg-base: #141618;
-    --bg-deep: #0D0F11;
+    --bg-base: #101214;
+    --bg-deep: #090B0D;
     --bg-gradient: var(--bg-base);
-    --surface: rgba(255,255,255,.045);
-    --surface-hi: rgba(255,255,255,.08);
+    --surface: rgba(255,255,255,.035);
+    --surface-hi: rgba(255,255,255,.065);
     --surface-lo: rgba(255,255,255,.025);
-    --surface-popup: rgba(22,25,28,.98);
+    --surface-popup: rgba(16,18,20,.98);
     --border: rgba(220,225,230,.10);
     --border-hi: rgba(220,225,230,.18);
     --text: #E8ECEF;
     --text-bright: #F5F7F8;
     --text-muted: #979FA7;
     --text-dim: #626A72;
-    --accent: #69D875;
+    --accent: #95EB35;
     --accent-contrast: #0C190F;
-    --accent-soft: rgba(105,216,117,.22);
-    --accent-glow: rgba(105,216,117,.38);
-    --accent-deep: #42AB55;
-    --accent-grad: linear-gradient(135deg, #80E38A 0%, #50C667 100%);
+    --accent-soft: rgba(149,235,53,.22);
+    --accent-glow: rgba(149,235,53,.38);
+    --accent-deep: #70BB22;
+    --accent-grad: linear-gradient(135deg, #95EB35 0%, #95EB35 100%);
     --play: var(--accent);
-    --play-glow: rgba(105,216,117,.36);
-    --shadow-glow: 0 0 24px rgba(105,216,117,.13);
-    --nav-active-bg: linear-gradient(135deg, rgba(105,216,117,.16), rgba(105,216,117,.05));
-    --nav-active-border: rgba(105,216,117,.40);
-    --chip-active-bg: rgba(105,216,117,.14);
-    --chip-active-border: rgba(105,216,117,.50);
-    --focus-border: rgba(105,216,117,.55);
-    --card-hover-border: rgba(105,216,117,.45);
-    --hero-tint: rgba(105,216,117,.06);
-    --interactive-hover-border: rgba(105,216,117,.35);
-    --link-hover: #98E8A1;
+    --play-glow: rgba(149,235,53,.36);
+    --shadow-glow: 0 0 24px rgba(149,235,53,.13);
+    --nav-active-bg: linear-gradient(135deg, rgba(149,235,53,.16), rgba(149,235,53,.05));
+    --nav-active-border: rgba(149,235,53,.40);
+    --chip-active-bg: rgba(149,235,53,.14);
+    --chip-active-border: rgba(149,235,53,.50);
+    --focus-border: rgba(149,235,53,.55);
+    --card-hover-border: rgba(149,235,53,.45);
+    --hero-tint: rgba(149,235,53,.06);
+    --interactive-hover-border: rgba(149,235,53,.35);
+    --link-hover: #ACF05F;
     --title-border: rgba(220,225,230,.07);
     --checkbox-mark: #0C190F;
 }
 html:not([data-theme])[data-accent="starzismik"] ::selection {
-    background: rgba(105,216,117,.55);
+    background: rgba(149,235,53,.55);
     color: #fff;
 }
