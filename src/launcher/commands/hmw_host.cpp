@@ -144,7 +144,8 @@ namespace hmw_host
             line("scr_game_hardpoints",boolean(p,"killstreaks",true)?"1":"0");
             line("g_allowVote",boolean(p,"voting",true)?"1":"0");
             line("scr_game_onlyheadshots",boolean(p,"headshots")?"1":"0");
-            line("scr_xpscale",std::to_string(number(p,"xpMultiplier",1,1,2)));
+            const auto xp=number(p,"xpMultiplier",1,1,4);if(xp!=1&&xp!=2&&xp!=4)throw std::runtime_error("Multiplicateur XP invalide");
+            line("scr_xpscale",std::to_string(xp));line("warlink_xp_multiplier",std::to_string(xp));
             line("scr_hardcore",boolean(p,"hardcore")?"1":"0");
             line("g_hardcore",boolean(p,"hardcore")?"1":"0");
             line("scr_game_forceuav",boolean(p,"constantUav")?"1":"0");
@@ -501,6 +502,8 @@ namespace hmw_host
                         const auto access=str(p,"access","private");
                         const auto publication=access=="local" ? "Local : ce serveur est accessible sur ce PC uniquement." : access!="public" ? "Privé : connexion directe ; absent de la liste Internet officielle." : str(p,"serverKey").empty() ? "Clé HMW absente : non référencé officiellement. Pour les amis, utiliser la connexion directe et rediriger ce port en TCP et UDP sur la box." : "Clé HMW renseignée. Le référencement doit encore être accepté par HMW et le port TCP/UDP accessible depuis Internet ; le démarrage local ne le prouve pas.";
                         set(out,"publication",publication,a);
+                        const auto owner=read_json(dir/"directory-owner.json");const auto share=str(owner,"endpoint");
+                        if(access!="local" && std::regex_match(share,std::regex("[0-9]{1,3}(\\.[0-9]{1,3}){3}:[0-9]{4,5}")) && share.ends_with(":"+std::to_string(number(p,"port",27017,1024,65535))))set(out,"shareEndpoint",share,a);
                         out.AddMember("running",running,a);
                         const auto info=udp(number(p,"port",27017,1024,65535),"getinfo warlink",300);
                         out.AddMember("ready",running && info.find("infoResponse")!=std::string::npos && info.find("\\sv_running\\1")!=std::string::npos,a);set(out,"info",info,a);
@@ -508,6 +511,19 @@ namespace hmw_host
                         std::string text;if(log){log.seekg(0,std::ios::end);const auto size=log.tellg();log.seekg(size>std::streampos(24000)?size-std::streamoff(24000):std::streampos(0));text.assign(std::istreambuf_iterator<char>(log),{});}
                         const auto password=str(p,"rconPassword");for(size_t pos=0;!password.empty()&&(pos=text.find(password,pos))!=std::string::npos;pos+=10)text.replace(pos,password.size(),"[masqué]");
                         set(out,"log",text,a);
+                    }
+                    else if(action=="xp-update")
+                    {
+                        const auto xp=number(request,"multiplier",1,1,4);if(xp!=1&&xp!=2&&xp!=4)throw std::runtime_error("Multiplicateur XP invalide");
+                        set(p,"xpMultiplier",xp,p.GetAllocator());write_json(dir/"profile.json",p);
+                        if(!utils::io::write_file(game_path(p)/"main"/config_name(id),make_config(p)))throw std::runtime_error("Écriture de la configuration XP impossible");
+                        if(const auto process=owned_process(id,p)) {
+                            CloseHandle(process);const auto port=number(p,"port",27017,1024,65535);
+                            udp(port,"rcon "+str(p,"rconPassword")+" set warlink_xp_multiplier "+std::to_string(xp));
+                            std::this_thread::sleep_for(std::chrono::milliseconds(1300));const auto response=udp(port,"rcon "+str(p,"rconPassword")+" warlink_xp_effective");
+                            if(response.find("is: \""+std::to_string(xp)+"\"")==std::string::npos)throw std::runtime_error("XP enregistrée ; application en direct non confirmée. Recharge le script du serveur.");
+                        }
+                        set(out,"message","XP ×"+std::to_string(xp)+" enregistrée et appliquée par le serveur.",a);
                     }
                     else if(action=="moderation-list" || action=="unban")
                     {

@@ -21,6 +21,7 @@ init()
     level thread warlink_team_requests();
     level thread warlink_moderation();
     level thread warlink_banner_tests();
+    level thread warlink_xp_controller();
     LogPrint("WARLINK_MESSAGES_READY\n");
 }
 
@@ -106,6 +107,7 @@ warlink_connections()
         {
             player thread warlink_welcome();
             player thread warlink_announcements();
+            player thread warlink_xp_observer();
         }
     }
 }
@@ -503,4 +505,53 @@ warlink_drop_cleanup()
 {
     wait 45;
     if (isdefined(self)) self delete();
+}
+
+warlink_xp_controller()
+{
+    level endon("game_ended");
+    previous = -1;
+    for (;;)
+    {
+        wait 0.25;
+        requested = getdvarint("warlink_xp_multiplier");
+        if (requested != 1 && requested != 2 && requested != 4) requested = 1;
+        if (requested != previous || !isdefined(level.xpScale) || level.xpScale != requested)
+        {
+            old_scale = "undefined";
+            if (isdefined(level.xpScale)) old_scale = level.xpScale;
+            level.xpScale = requested;
+            setdvar("scr_xpscale", requested);
+            setdvar("warlink_xp_effective", requested);
+            LogPrint("WARLINK_XP_APPLIED requested=" + requested + " old=" + old_scale + " effective=" + level.xpScale + "\n");
+            previous = requested;
+        }
+        if (getdvarint("warlink_xp_inspect"))
+        {
+            setdvar("warlink_xp_inspect", "0");
+            foreach (p in level.players)
+            {
+                if (isBot(p)) continue;
+                xp = p getplayerdata(common_scripts\utility::getstatsgroup_ranked(), "experience");
+                LogPrint("WARLINK_XP_OBSERVED " + p getentitynumber() + " xp=" + xp + " scale=" + level.xpScale + "\n");
+            }
+        }
+    }
+}
+
+warlink_xp_observer()
+{
+    self endon("disconnect");
+    wait 3;
+    previous = self getplayerdata(common_scripts\utility::getstatsgroup_ranked(), "experience");
+    for (;;)
+    {
+        wait 1;
+        current = self getplayerdata(common_scripts\utility::getstatsgroup_ranked(), "experience");
+        if (current != previous)
+        {
+            LogPrint("WARLINK_XP_GAIN slot=" + self getentitynumber() + " before=" + previous + " after=" + current + " delta=" + (current - previous) + " scale=" + level.xpScale + "\n");
+            previous = current;
+        }
+    }
 }
