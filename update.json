@@ -1,8 +1,8 @@
 {
-  "version": "1.0.1",
+  "version": "1.0.2",
   "released": true,
   "mandatory": true,
-  "downloadUrl": "https://github.com/starzismik/WARLINK/releases/download/v1.0.1-beta.1/WARLINK-1.0.1-BETA.zip",
-  "sha256": "ba58319eb676b57e1664fa0b757426823f7dfcabcd56687c56cb0eaee6a2ffda",
-  "notes": "BÊTA 1.0.1 : correction des manifestes manquants pour gérer et installer les jeux ; présence Discord WARLINK. Fermer WARLINK et extraire tout le ZIP dans son dossier existant en remplaçant les fichiers. Les réglages sont conservés."
+  "downloadUrl": "https://github.com/starzismik/WARLINK/releases/download/v1.0.2-beta.1/WARLINK-1.0.2-BETA.zip",
+  "sha256": "f772e1d9b3c87212500a685be3697c67626f2c78c6bae67b4d27d3f277c3dcdc",
+  "notes": "BÊTA 1.0.2 : accès Discord aux serveurs privés, modèle WARLINK indépendant, corrections de fluidité et des fichiers de langue HorizonMW. Fermer WARLINK puis extraire tout le ZIP dans le dossier existant en remplaçant les fichiers. Conserver les données utilisateur."
 }
