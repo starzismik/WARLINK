@@ -1,8 +1,8 @@
 {
-  "version": "1.0.4",
+  "version": "1.0.5",
   "released": true,
   "mandatory": true,
-  "downloadUrl": "https://github.com/starzismik/WARLINK/releases/download/v1.0.4-beta.1/WARLINK-1.0.4-BETA.zip",
-  "sha256": "5bbc8e1f9f9ad9bcc046e28baa488fb8122463d25c0ed6a4cf708c51401db1d8",
-  "notes": "BÊTA 1.0.4 : mise à jour directe vers la dernière version, remplacement et relance automatiques, corrections Studio, thèmes et gestion des serveurs."
+  "downloadUrl": "https://github.com/starzismik/WARLINK/releases/download/v1.0.5-beta.1/WARLINK-1.0.5-BETA.zip",
+  "sha256": "dfe796fc1a59e46e68171f9e9b748985c591b14f295146a88e19c954c8d3c425",
+  "notes": "BÊTA 1.0.5 : restauration Discord avant Mes serveurs, corrections de fluidité du Studio, rafraîchissements optimisés et onglet Tournois."
 }
