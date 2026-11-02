@@ -3,6 +3,6 @@
   "released": true,
   "mandatory": true,
   "downloadUrl": "https://github.com/starzismik/WARLINK/releases/download/v1.0.4-beta.1/WARLINK-1.0.4-BETA.zip",
-  "sha256": "932f8cae09c0e656427f41ebd1125274b5cca1e209bfe94c2ca43cde4df2800e",
-  "notes": "BÊTA 1.0.4 : WARLINK.exe autonome, mise à jour avec remplacement et relance automatiques depuis la 1.0.3, Studio intégré, port enregistré avant démarrage et publication simplifiée."
+  "sha256": "5bbc8e1f9f9ad9bcc046e28baa488fb8122463d25c0ed6a4cf708c51401db1d8",
+  "notes": "BÊTA 1.0.4 : mise à jour directe vers la dernière version, remplacement et relance automatiques, corrections Studio, thèmes et gestion des serveurs."
 }
